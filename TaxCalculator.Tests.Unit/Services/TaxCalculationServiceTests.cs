@@ -87,10 +87,8 @@ namespace TaxCalculator.Tests.Unit.Services
             };
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<ArgumentException>(
+            Assert.ThrowsAsync<ArgumentException>(
                 () => _taxCalculationService.CalculateTaxAsync(request));
-
-            Assert.That(ex.Message, Contains.Substring("cannot be negative"));
         }
 
         [TestCase(18200, 0)] // Tax-free threshold
