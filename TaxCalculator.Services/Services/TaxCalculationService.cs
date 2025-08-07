@@ -208,16 +208,60 @@ namespace TaxCalculator.Services.Services
             return await _taxBracketRepository.GetTaxBracketsAsync(financialYear);
         }
 
-        public async Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years)
+        public async Task<List<TaxCalculationResult>> CompareTaxAcrossYearsAsync(decimal income, List<string> years)
         {
-            // Implementation for comparing tax across years
-            throw new NotImplementedException();
+            if (income < 0)
+                throw new ArgumentException("Income cannot be negative");
+
+            if (years == null || years.Count == 0)
+                throw new ArgumentException("Years list cannot be empty");
+
+            var results = new List<TaxCalculationResult>();
+
+            foreach (var year in years)
+            {
+                try
+                {
+                    var request = new TaxCalculationRequest
+                    {
+                        TaxableIncome = income,
+                        FinancialYear = year
+                    };
+
+                    var result = await CalculateTaxAsync(request);
+                    results.Add(result);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Failed to calculate tax for year {year}: {ex.Message}");
+                    // Continue with other years
+                }
+            }
+
+            return results;
         }
 
         public async Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10)
         {
-            // Implementation for getting tax history
-            throw new NotImplementedException();
+            if (income < 0)
+                throw new ArgumentException("Income cannot be negative");
+
+            if (years <= 0 || years > 20)
+                throw new ArgumentException("Years must be between 1 and 20");
+
+            var currentYear = DateTime.Now.Year;
+            var yearsList = new List<string>();
+
+            // Generate financial years backwards from current year
+            for (int i = 0; i < years; i++)
+            {
+                var year = currentYear - i;
+                var financialYear = $"{year - 1}-{year.ToString().Substring(2)}";
+                yearsList.Add(financialYear);
+            }
+
+            // Use the compare method to get calculations for all years
+            return await CompareTaxAcrossYearsAsync(income, yearsList);
         }
     }
 

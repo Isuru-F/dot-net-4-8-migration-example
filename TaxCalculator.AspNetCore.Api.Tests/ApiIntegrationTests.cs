@@ -1,9 +1,13 @@
 using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using TaxCalculator.Core.Models;
+using TaxCalculator.Data.Interfaces;
+using TaxCalculator.Services.Interfaces;
 
 namespace TaxCalculator.AspNetCore.Api.Tests;
 
@@ -15,8 +19,53 @@ public class ApiIntegrationTests
     [SetUp]
     public void Setup()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Remove the real repository and add a mock
+                    var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ITaxBracketRepository));
+                    if (descriptor != null)
+                        services.Remove(descriptor);
+
+                    // Add mock repository
+                    var mockRepository = new Mock<ITaxBracketRepository>();
+                    SetupMockTaxBrackets(mockRepository);
+                    services.AddSingleton(mockRepository.Object);
+                });
+            });
         _client = _factory.CreateClient();
+    }
+
+    private void SetupMockTaxBrackets(Mock<ITaxBracketRepository> mockRepository)
+    {
+        var brackets2024_25 = new List<TaxBracket>
+        {
+            new TaxBracket { Id = 1, FinancialYear = "2024-25", MinIncome = 0, MaxIncome = 18200, TaxRate = 0m, FixedAmount = 0m, BracketOrder = 1, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 2, FinancialYear = "2024-25", MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.16m, FixedAmount = 0m, BracketOrder = 2, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 3, FinancialYear = "2024-25", MinIncome = 45001, MaxIncome = 135000, TaxRate = 0.30m, FixedAmount = 4288m, BracketOrder = 3, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 4, FinancialYear = "2024-25", MinIncome = 135001, MaxIncome = 190000, TaxRate = 0.37m, FixedAmount = 31288m, BracketOrder = 4, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 5, FinancialYear = "2024-25", MinIncome = 190001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51638m, BracketOrder = 5, IsActive = true, CreatedDate = DateTime.Now }
+        };
+
+        var brackets2023_24 = new List<TaxBracket>
+        {
+            new TaxBracket { Id = 6, FinancialYear = "2023-24", MinIncome = 0, MaxIncome = 18200, TaxRate = 0m, FixedAmount = 0m, BracketOrder = 1, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 7, FinancialYear = "2023-24", MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.19m, FixedAmount = 0m, BracketOrder = 2, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 8, FinancialYear = "2023-24", MinIncome = 45001, MaxIncome = 120000, TaxRate = 0.325m, FixedAmount = 5092m, BracketOrder = 3, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 9, FinancialYear = "2023-24", MinIncome = 120001, MaxIncome = 180000, TaxRate = 0.37m, FixedAmount = 29467m, BracketOrder = 4, IsActive = true, CreatedDate = DateTime.Now },
+            new TaxBracket { Id = 10, FinancialYear = "2023-24", MinIncome = 180001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51667m, BracketOrder = 5, IsActive = true, CreatedDate = DateTime.Now }
+        };
+
+        mockRepository.Setup(x => x.GetTaxBracketsAsync("2024-25")).ReturnsAsync(brackets2024_25);
+        mockRepository.Setup(x => x.GetTaxBracketsAsync("2023-24")).ReturnsAsync(brackets2023_24);
+        
+        // Setup for tax offsets (empty for now)
+        mockRepository.Setup(x => x.GetTaxOffsetsAsync(It.IsAny<string>())).ReturnsAsync(new List<TaxOffset>());
+        
+        // Setup for tax levies (empty for now)
+        mockRepository.Setup(x => x.GetTaxLeviesAsync(It.IsAny<string>())).ReturnsAsync(new List<TaxLevy>());
     }
 
     [TearDown]

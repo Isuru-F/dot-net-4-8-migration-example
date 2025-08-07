@@ -8,7 +8,7 @@ namespace TaxCalculator.Services.Interfaces
     {
         Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request);
         Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);
-        Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years);
+        Task<List<TaxCalculationResult>> CompareTaxAcrossYearsAsync(decimal income, List<string> years);
         Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10);
     }
 }

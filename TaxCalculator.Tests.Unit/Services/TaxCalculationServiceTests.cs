@@ -224,6 +224,22 @@ namespace TaxCalculator.Tests.Unit.Services
 
             _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(year))
                                     .ReturnsAsync(brackets);
+
+            // Setup basic Medicare levy for all years
+            var medicareLevy = new List<TaxLevy>
+            {
+                new TaxLevy { LevyType = "Medicare", ThresholdIncome = 0, LevyRate = 0.02m, IsActive = true }
+            };
+            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync(year))
+                                    .ReturnsAsync(medicareLevy);
+
+            // Setup basic offsets for all years
+            var offsets = new List<TaxOffset>
+            {
+                new TaxOffset { OffsetType = "LITO", MaxOffset = 700m, PhaseOutStart = 37500m, PhaseOutRate = 0.05m, IsActive = true }
+            };
+            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync(year))
+                                    .ReturnsAsync(offsets);
         }
     }
 }
