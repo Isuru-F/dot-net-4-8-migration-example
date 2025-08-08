@@ -1,0 +1,62 @@
+name: .NET 8 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, dot-net-core-8-upgrade ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build Core Libraries
+      run: |
+        dotnet build TaxCalculator.Core --configuration Release --no-restore
+        dotnet build TaxCalculator.Data --configuration Release --no-restore
+        dotnet build TaxCalculator.Services --configuration Release --no-restore
+        dotnet build TaxCalculator.Infrastructure --configuration Release --no-restore
+        
+    - name: Build API
+      run: dotnet build TaxCalculator.AspNetCore.Api --configuration Release --no-restore
+      
+    - name: Run Unit Tests
+      run: dotnet test TaxCalculator.Tests.Unit --configuration Release --no-build --verbosity minimal
+      
+    - name: Run Integration Tests
+      run: dotnet test TaxCalculator.AspNetCore.Api.Tests --configuration Release --no-build --verbosity minimal
+      
+    - name: Publish API
+      run: dotnet publish TaxCalculator.AspNetCore.Api --configuration Release --output ./publish --no-build
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: published-api
+        path: ./publish
+
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker image
+      run: |
+        docker build -t tax-calculator-api:${{ github.sha }} -f TaxCalculator.AspNetCore.Api/Dockerfile .
+        
+    - name: Tag as latest
+      run: docker tag tax-calculator-api:${{ github.sha }} tax-calculator-api:latest

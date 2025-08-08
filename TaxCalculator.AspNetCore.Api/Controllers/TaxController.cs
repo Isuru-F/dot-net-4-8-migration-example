@@ -1,0 +1,112 @@
+using Microsoft.AspNetCore.Mvc;
+using TaxCalculator.Core.Models;
+using TaxCalculator.Services.Interfaces;
+
+namespace TaxCalculator.AspNetCore.Api.Controllers;
+
+[ApiController]
+[Route("api/tax")]
+public class TaxController : ControllerBase
+{
+    private readonly ITaxCalculationService _taxCalculationService;
+    private readonly TaxCalculator.Services.Interfaces.ILogger _logger;
+
+    public TaxController(ITaxCalculationService taxCalculationService, TaxCalculator.Services.Interfaces.ILogger logger)
+    {
+        _taxCalculationService = taxCalculationService;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    [Route("calculate")]
+    public async Task<IActionResult> CalculateTax([FromBody] TaxCalculationRequest request)
+    {
+        try
+        {
+            if (request == null)
+                return BadRequest("Request cannot be null");
+
+            if (request.TaxableIncome < 0)
+                return BadRequest("Taxable income cannot be negative");
+
+            if (string.IsNullOrEmpty(request.FinancialYear))
+                return BadRequest("Financial year is required");
+
+            var result = await _taxCalculationService.CalculateTaxAsync(request);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning($"Invalid request: {ex.Message}");
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error calculating tax: {ex.Message}", ex);
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+
+    [HttpGet]
+    [Route("brackets/{year}")]
+    public async Task<IActionResult> GetTaxBrackets(string year)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(year))
+                return BadRequest("Year is required");
+
+            var brackets = await _taxCalculationService.GetTaxBracketsAsync(year);
+            return Ok(brackets);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error getting tax brackets: {ex.Message}", ex);
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+
+    [HttpGet]
+    [Route("compare")]
+    public async Task<IActionResult> CompareTax(decimal income, [FromQuery] string[] years)
+    {
+        try
+        {
+            if (income < 0)
+                return BadRequest("Income cannot be negative");
+
+            if (years == null || years.Length == 0)
+                return BadRequest("Years are required");
+
+            var result = await _taxCalculationService.CompareTaxAcrossYearsAsync(income, new List<string>(years));
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error comparing tax: {ex.Message}", ex);
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+
+    [HttpGet]
+    [Route("history/{income}")]
+    public async Task<IActionResult> GetTaxHistory(decimal income, int years = 10)
+    {
+        try
+        {
+            if (income < 0)
+                return BadRequest("Income cannot be negative");
+
+            if (years <= 0 || years > 20)
+                return BadRequest("Years must be between 1 and 20");
+
+            var result = await _taxCalculationService.GetTaxHistoryAsync(income, years);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error getting tax history: {ex.Message}", ex);
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+}
