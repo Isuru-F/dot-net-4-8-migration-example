@@ -1,0 +1,33 @@
+./TaxCalculator.Data/Repositories/TaxBracketRepository.cs:21:            return await Task.Run(() =>
+./TaxCalculator.Data/Repositories/TaxBracketRepository.cs:63:            return await Task.Run(() =>
+./TaxCalculator.Data/Repositories/TaxBracketRepository.cs:104:            return await Task.Run(() =>
+./TaxCalculator.Data/Repositories/TaxBracketRepository.cs:144:            return await Task.Run(() =>
+./TaxCalculator.StandaloneApi/Program.cs:30:            Console.CancelKeyPress += (sender, e) =>
+./TaxCalculator.StandaloneApi/Program.cs:43:                var serverThread = new Thread(() =>
+./TaxCalculator.Services/Services/TaxCalculationService.cs:88:            foreach (var bracket in brackets.OrderBy(b => b.BracketOrder))
+./TaxCalculator.Services/Services/TaxCalculationService.cs:127:            var medicareLevy = levies.FirstOrDefault(l => l.LevyType == "Medicare");
+./TaxCalculator.Services/Services/TaxCalculationService.cs:153:            var budgetRepairLevy = levies.FirstOrDefault(l => l.LevyType == "BudgetRepair");
+./TaxCalculator.Services/Services/TaxCalculationService.cs:172:            var lito = offsets.FirstOrDefault(o => o.OffsetType == "LITO");
+./TaxCalculator.Services/Services/TaxCalculationService.cs:199:                .Where(b => income >= b.MinIncome && (b.MaxIncome == null || income <= b.MaxIncome))
+./TaxCalculator.Services/Services/TaxCalculationService.cs:200:                .OrderBy(b => b.BracketOrder)
+./TaxCalculator.Services/Services/CacheService.cs:35:            _cache.AddOrUpdate(key, item, (k, v) => item);
+./TaxCalculator.Services/Services/UserTaxService.cs:40:            var totalGrossIncome = monthlyIncomes.Sum(m => m.GrossIncome);
+./TaxCalculator.Services/Services/UserTaxService.cs:41:            var totalDeductions = monthlyIncomes.Sum(m => m.DeductionsAmount);
+./TaxCalculator.Services/Services/UserTaxService.cs:42:            var totalTaxableIncome = monthlyIncomes.Sum(m => m.TaxableIncome);
+./TaxCalculator.Services/Services/UserTaxService.cs:71:                MonthlyBreakdown = monthlyIncomes.Select(m => new MonthlyIncomeSummary
+./TaxCalculator.Api/App_Start/AutofacConfig.cs:24:            builder.Register(c => new SqlConnectionFactory(connectionString))
+./TaxCalculator.TestClient/TaxCalculationEngine.cs:57:            foreach (var bracket in brackets.OrderBy(b => b.BracketOrder))
+./TaxCalculator.TestClient/TaxCalculationEngine.cs:98:                .Where(b => income >= b.MinIncome && (b.MaxIncome == null || income <= b.MaxIncome))
+./TaxCalculator.TestClient/TaxCalculationEngine.cs:99:                .OrderBy(b => b.BracketOrder)
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:58:            _mockCacheService.Setup(x => x.GetAsync<List<TaxBracket>>(It.IsAny<string>()))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:61:            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:63:            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:65:            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:91:                () => _taxCalculationService.CalculateTaxAsync(request));
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:141:            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:143:            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:179:            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:181:            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync("2024-25"))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:198:            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(year))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:224:            _mockCacheService.Setup(x => x.GetAsync<List<TaxBracket>>(It.IsAny<string>()))
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:227:            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(year))

@@ -1,0 +1,47 @@
+./TaxCalculator.Data/Repositories/TaxBracketRepository.cs:10:    public class TaxBracketRepository : ITaxBracketRepository
+./TaxCalculator.Data/Repositories/UserRepository.cs:10:    public class UserRepository : IUserRepository
+./TaxCalculator.Data/Repositories/UserIncomeRepository.cs:10:    public class UserIncomeRepository : IUserIncomeRepository
+./TaxCalculator.Data/Repositories/SqlConnectionFactory.cs:7:    public class SqlConnectionFactory : IConnectionFactory
+./TaxCalculator.Data/Interfaces/IUserIncomeRepository.cs:8:    public interface IUserIncomeRepository
+./TaxCalculator.Data/Interfaces/ITaxBracketRepository.cs:7:    public interface ITaxBracketRepository
+./TaxCalculator.Data/Interfaces/IUserRepository.cs:8:    public interface IUserRepository
+./TaxCalculator.Data/Interfaces/IConnectionFactory.cs:5:    public interface IConnectionFactory
+./TaxCalculator.StandaloneApi/TaxApiServer.cs:10:    public class TaxApiServer
+./TaxCalculator.StandaloneApi/Program.cs:6:    class Program
+./TaxCalculator.Services/Services/TaxCalculationService.cs:11:    public class TaxCalculationService : ITaxCalculationService
+./TaxCalculator.Services/Services/TaxCalculationService.cs:224:    public class ProgressiveIncomeTaxResult
+./TaxCalculator.Services/Services/CacheService.cs:8:    public class CacheService : ICacheService
+./TaxCalculator.Services/Services/CacheService.cs:45:        private class CacheItem
+./TaxCalculator.Services/Services/UserTaxService.cs:11:    public class UserTaxService : IUserTaxService
+./TaxCalculator.Services/Services/SimpleLogger.cs:6:    public class SimpleLogger : ILogger
+./TaxCalculator.Services/Interfaces/ILogger.cs:5:    public interface ILogger
+./TaxCalculator.Services/Interfaces/ITaxCalculationService.cs:7:    public interface ITaxCalculationService
+./TaxCalculator.Services/Interfaces/ICacheService.cs:6:    public interface ICacheService
+./TaxCalculator.Services/Interfaces/IUserTaxService.cs:8:    public interface IUserTaxService
+./ApiTestClient.cs:7:class ApiTestClient
+./ApiTestClient.cs:184:    class HttpResponse
+./TaxCalculator.Console/Program.cs:8:    class Program
+./TaxCalculator.Api/Global.asax.cs:6:    public class WebApiApplication : HttpApplication
+./TaxCalculator.Api/App_Start/WebApiConfig.cs:5:    public static class WebApiConfig
+./TaxCalculator.Api/App_Start/AutofacConfig.cs:13:    public static class AutofacConfig
+./TaxCalculator.Api/Controllers/TaxController.cs:11:    public class TaxController : ApiController
+./TaxCalculator.Api/Controllers/HealthController.cs:6:    public class HealthController : ApiController
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:5:    public class TaxCalculationResult
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:3:    public class TaxBracketCalculation
+./TaxCalculator.Core/Models/LevyCalculation.cs:3:    public class LevyCalculation
+./TaxCalculator.Core/Models/TaxBracket.cs:5:    public class TaxBracket
+./TaxCalculator.Core/Models/User.cs:5:    public class User
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:5:    public class UserMonthlyIncome
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:5:    public class TaxCalculationRequest
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:3:    public class MonthlyIncomeSummary
+./TaxCalculator.Core/Models/TaxOffset.cs:5:    public class TaxOffset
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:6:    public class UserAnnualTaxSummary
+./TaxCalculator.Core/Models/TaxLevy.cs:5:    public class TaxLevy
+./TaxCalculator.Core/Models/OffsetCalculation.cs:5:    public class OffsetCalculation
+./TaxCalculator.TestClient/TaxCalculationEngine.cs:7:    public class TaxCalculationEngine
+./TaxCalculator.TestClient/Models.cs:5:    public class TaxBracket
+./TaxCalculator.TestClient/Models.cs:14:    public class TaxCalculationRequest
+./TaxCalculator.TestClient/Models.cs:23:    public class TaxCalculationResult
+./TaxCalculator.TestClient/Models.cs:38:    public class ApiTestResult
+./TaxCalculator.TestClient/Program.cs:7:    class Program
+./TaxCalculator.Tests.Unit/Services/TaxCalculationServiceTests.cs:15:    public class TaxCalculationServiceTests

@@ -1,0 +1,134 @@
+./TaxCalculator.Services/Services/TaxCalculationService.cs:226:        public decimal TotalTax { get; set; }
+./TaxCalculator.Services/Services/TaxCalculationService.cs:227:        public List<TaxBracketCalculation> BracketBreakdown { get; set; }
+./TaxCalculator.Services/Services/CacheService.cs:47:            public object Value { get; set; }
+./TaxCalculator.Services/Services/CacheService.cs:48:            public DateTime ExpiryTime { get; set; }
+./ApiTestClient.cs:186:        public int StatusCode { get; set; }
+./ApiTestClient.cs:187:        public string Body { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:7:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:8:        public decimal IncomeTax { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:9:        public decimal MedicareLevy { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:10:        public decimal BudgetRepairLevy { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:11:        public decimal TotalLevies { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:12:        public decimal TaxOffsets { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:13:        public decimal NetTaxPayable { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:14:        public decimal NetIncome { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:15:        public decimal EffectiveRate { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:16:        public decimal MarginalRate { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:17:        public List<TaxBracketCalculation> BracketBreakdown { get; set; } = new List<TaxBracketCalculation>();
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:18:        public List<LevyCalculation> LevyBreakdown { get; set; } = new List<LevyCalculation>();
+./TaxCalculator.Core/Models/TaxCalculationResult.cs:19:        public List<OffsetCalculation> OffsetBreakdown { get; set; } = new List<OffsetCalculation>();
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:5:        public decimal MinIncome { get; set; }
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:6:        public decimal? MaxIncome { get; set; }
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:7:        public decimal TaxRate { get; set; }
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:8:        public decimal TaxableInBracket { get; set; }
+./TaxCalculator.Core/Models/TaxBracketCalculation.cs:9:        public decimal TaxPayable { get; set; }
+./TaxCalculator.Core/Models/LevyCalculation.cs:5:        public string LevyType { get; set; }
+./TaxCalculator.Core/Models/LevyCalculation.cs:6:        public decimal ThresholdIncome { get; set; }
+./TaxCalculator.Core/Models/LevyCalculation.cs:7:        public decimal LevyRate { get; set; }
+./TaxCalculator.Core/Models/LevyCalculation.cs:8:        public decimal Amount { get; set; }
+./TaxCalculator.Core/Models/LevyCalculation.cs:9:        public decimal BudgetRepairLevy { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:7:        public int Id { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:8:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:9:        public decimal MinIncome { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:10:        public decimal? MaxIncome { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:11:        public decimal TaxRate { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:12:        public decimal FixedAmount { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:13:        public int BracketOrder { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:14:        public DateTime CreatedDate { get; set; }
+./TaxCalculator.Core/Models/TaxBracket.cs:15:        public bool IsActive { get; set; }
+./TaxCalculator.Core/Models/User.cs:7:        public Guid UserId { get; set; }
+./TaxCalculator.Core/Models/User.cs:8:        public string FirstName { get; set; }
+./TaxCalculator.Core/Models/User.cs:9:        public string LastName { get; set; }
+./TaxCalculator.Core/Models/User.cs:10:        public string Email { get; set; }
+./TaxCalculator.Core/Models/User.cs:11:        public DateTime? DateOfBirth { get; set; }
+./TaxCalculator.Core/Models/User.cs:12:        public string TFN { get; set; }
+./TaxCalculator.Core/Models/User.cs:13:        public string ResidencyStatus { get; set; } = "Resident";
+./TaxCalculator.Core/Models/User.cs:14:        public DateTime CreatedDate { get; set; }
+./TaxCalculator.Core/Models/User.cs:15:        public DateTime LastModifiedDate { get; set; }
+./TaxCalculator.Core/Models/User.cs:16:        public bool IsActive { get; set; } = true;
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:7:        public long Id { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:8:        public Guid UserId { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:9:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:10:        public int Month { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:11:        public decimal GrossIncome { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:12:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:13:        public decimal DeductionsAmount { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:14:        public decimal SuperContributions { get; set; }
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:15:        public string IncomeType { get; set; } = "Salary";
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:16:        public string PayPeriod { get; set; } = "Monthly";
+./TaxCalculator.Core/Models/UserMonthlyIncome.cs:17:        public DateTime RecordedDate { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:7:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:8:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:9:        public string ResidencyStatus { get; set; } = "Resident";
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:10:        public bool IncludeMedicareLevy { get; set; } = true;
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:11:        public bool IncludeOffsets { get; set; } = true;
+./TaxCalculator.Core/Models/TaxCalculationRequest.cs:12:        public Dictionary<string, decimal> AdditionalIncomeTypes { get; set; } = new Dictionary<string, decimal>();
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:5:        public int Month { get; set; }
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:6:        public decimal GrossIncome { get; set; }
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:7:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:8:        public decimal Deductions { get; set; }
+./TaxCalculator.Core/Models/MonthlyIncomeSummary.cs:9:        public string IncomeType { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:7:        public int Id { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:8:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:9:        public string OffsetType { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:10:        public decimal? MaxIncome { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:11:        public decimal MaxOffset { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:12:        public decimal? PhaseOutStart { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:13:        public decimal? PhaseOutRate { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:14:        public bool IsActive { get; set; }
+./TaxCalculator.Core/Models/TaxOffset.cs:15:        public DateTime CreatedDate { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:8:        public long Id { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:9:        public Guid UserId { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:10:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:11:        public decimal TotalGrossIncome { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:12:        public decimal TotalDeductions { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:13:        public decimal TotalTaxableIncome { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:14:        public decimal IncomeTaxPayable { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:15:        public decimal MedicareLevyPayable { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:16:        public decimal OtherLeviesPayable { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:17:        public decimal TotalTaxOffsets { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:18:        public decimal NetTaxPayable { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:19:        public decimal EffectiveTaxRate { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:20:        public decimal MarginalTaxRate { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:21:        public DateTime CalculationDate { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:22:        public DateTime LastModifiedDate { get; set; }
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:23:        public List<MonthlyIncomeSummary> MonthlyBreakdown { get; set; } = new List<MonthlyIncomeSummary>();
+./TaxCalculator.Core/Models/UserAnnualTaxSummary.cs:24:        public DateTime LastCalculated { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:7:        public int Id { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:8:        public string FinancialYear { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:9:        public string LevyType { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:10:        public decimal ThresholdIncome { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:11:        public decimal LevyRate { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:12:        public decimal? MaxIncome { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:13:        public bool IsActive { get; set; }
+./TaxCalculator.Core/Models/TaxLevy.cs:14:        public DateTime CreatedDate { get; set; }
+./TaxCalculator.Core/Models/OffsetCalculation.cs:7:        public string OffsetType { get; set; }
+./TaxCalculator.Core/Models/OffsetCalculation.cs:8:        public decimal Amount { get; set; }
+./TaxCalculator.Core/Models/OffsetCalculation.cs:9:        public decimal TotalOffsets { get; set; }
+./TaxCalculator.Core/Models/OffsetCalculation.cs:10:        public List<OffsetCalculation> OffsetBreakdown { get; set; } = new List<OffsetCalculation>();
+./TaxCalculator.TestClient/Models.cs:7:        public decimal MinIncome { get; set; }
+./TaxCalculator.TestClient/Models.cs:8:        public decimal? MaxIncome { get; set; }
+./TaxCalculator.TestClient/Models.cs:9:        public decimal TaxRate { get; set; }
+./TaxCalculator.TestClient/Models.cs:10:        public decimal FixedAmount { get; set; }
+./TaxCalculator.TestClient/Models.cs:11:        public int BracketOrder { get; set; }
+./TaxCalculator.TestClient/Models.cs:16:        public string FinancialYear { get; set; }
+./TaxCalculator.TestClient/Models.cs:17:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.TestClient/Models.cs:18:        public string ResidencyStatus { get; set; } = "Resident";
+./TaxCalculator.TestClient/Models.cs:19:        public bool IncludeMedicareLevy { get; set; } = true;
+./TaxCalculator.TestClient/Models.cs:20:        public bool IncludeOffsets { get; set; } = true;
+./TaxCalculator.TestClient/Models.cs:25:        public decimal TaxableIncome { get; set; }
+./TaxCalculator.TestClient/Models.cs:26:        public decimal IncomeTax { get; set; }
+./TaxCalculator.TestClient/Models.cs:27:        public decimal MedicareLevy { get; set; }
+./TaxCalculator.TestClient/Models.cs:28:        public decimal BudgetRepairLevy { get; set; }
+./TaxCalculator.TestClient/Models.cs:29:        public decimal TotalLevies { get; set; }
+./TaxCalculator.TestClient/Models.cs:30:        public decimal TaxOffsets { get; set; }
+./TaxCalculator.TestClient/Models.cs:31:        public decimal NetTaxPayable { get; set; }
+./TaxCalculator.TestClient/Models.cs:32:        public decimal NetIncome { get; set; }
+./TaxCalculator.TestClient/Models.cs:33:        public decimal EffectiveRate { get; set; }
+./TaxCalculator.TestClient/Models.cs:34:        public decimal MarginalRate { get; set; }
+./TaxCalculator.TestClient/Models.cs:35:        public string CalculationBreakdown { get; set; }
+./TaxCalculator.TestClient/Models.cs:40:        public string EndpointName { get; set; }
+./TaxCalculator.TestClient/Models.cs:41:        public bool Success { get; set; }
+./TaxCalculator.TestClient/Models.cs:42:        public string Response { get; set; }
+./TaxCalculator.TestClient/Models.cs:43:        public string Error { get; set; }
+./TaxCalculator.TestClient/Models.cs:44:        public TimeSpan Duration { get; set; }
