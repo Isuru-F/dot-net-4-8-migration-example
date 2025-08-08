@@ -1,0 +1,35 @@
+C# Symbol Extraction Summary
+============================
+
+Total C# files analyzed: 50
+
+Symbol Type Breakdown:
+----------------------
+1. Methods (regex_methods.txt):     65 matches
+   - Public method signatures extracted using: grep -rn "public.*(" --include="*.cs" .
+
+2. Properties (regex_properties.txt): 134 matches  
+   - Properties with getters/setters extracted using: grep -rn "{ get" --include="*.cs" .
+
+3. Types (regex_types.txt):         47 matches
+   - Type declarations (class, interface, enum, struct) extracted using: grep -rn "class \|interface \|enum \|struct " --include="*.cs" .
+
+4. Lambda Expressions (regex_lambdas.txt): 33 matches
+   - Lambda expressions extracted using: grep -rn "=>" --include="*.cs" .
+
+5. Delegates (regex_delegates.txt):  0 matches
+   - No delegate declarations found using: grep -rn "delegate" --include="*.cs" .
+
+6. Events (regex_events.txt):        0 matches  
+   - No event declarations found using: grep -rn "event" --include="*.cs" .
+
+7. Operators (regex_operators.txt):  0 matches
+   - No operator overloads found using: grep -rn "operator" --include="*.cs" .
+
+Total Symbols Extracted: 279
+
+Notes:
+- The codebase appears to be a tax calculation system with repositories, services, and API layers
+- Most common symbols are properties (134) and methods (65)
+- Contains modern C# patterns with lambda expressions (33)
+- No custom delegates, events, or operator overloads found
