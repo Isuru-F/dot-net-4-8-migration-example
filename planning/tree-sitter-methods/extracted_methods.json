@@ -1,0 +1,1154 @@
+[
+  {
+    "name": "Main",
+    "signature": "static void Main()",
+    "start_line": 11,
+    "end_line": 30,
+    "text": "static void Main()\n    {\n        Console.WriteLine(\"===========================================\");\n        Console.WriteLine(\"Australian Tax Calculator - API Test Client\");\n        Console.WriteLine(\"===========================================\");\n        Console.WriteLine();\n\n        // Give the server a moment to start if needed\n        Thread.Sleep(1000);\n\n        // Test all endpoints\n        TestHealthEndpoint();\n        TestTaxCalculationEndpoint();\n        TestTaxBracketsEndpoint();\n\n        Console.WriteLine();\n        Console.WriteLine(\"API testing complete!\");\n        Console.WriteLine(\"Press any key to exit...\");\n        Console.ReadKey();\n    }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": "TestHealthEndpoint",
+    "signature": "static void TestHealthEndpoint()",
+    "start_line": 32,
+    "end_line": 50,
+    "text": "static void TestHealthEndpoint()\n    {\n        Console.WriteLine(\"1. Testing Health Endpoint\");\n        Console.WriteLine(\"   GET /api/health\");\n        \n        try\n        {\n            var response = MakeHttpRequest(\"GET\", $\"{BaseUrl}/api/health\", null);\n            Console.WriteLine($\"   Status: ✅ {response.StatusCode}\");\n            Console.WriteLine($\"   Response: {response.Body}\");\n        }\n        catch (Exception ex)\n        {\n            Console.WriteLine($\"   Status: ❌ Error - {ex.Message}\");\n        }\n        Console.WriteLine();\n    }\n\n  ",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": "TaxCalculationEndpoint()\n ",
+    "signature": "ic void TestTaxCalculationEndpoint()",
+    "start_line": 50,
+    "end_line": 93,
+    "text": "ic void TestTaxCalculationEndpoint()\n    {\n        Console.WriteLine(\"2. Testing Tax Calculation Endpoint\");\n        Console.WriteLine(\"   POST /api/tax/calculate\");\n\n        var testCases = new[]\n        {\n            new { income = 85000, year = \"2024-25\", description = \"Middle income (2024-25)\" },\n            new { income = 200000, year = \"2015-16\", description = \"High income with Budget Repair Levy\" },\n            new { income = 18200, year = \"2024-25\", description = \"Tax-free threshold\" }\n        };\n\n        foreach (var testCase in testCases)\n        {\n            try\n            {\n                var requestBody = $\"{{\\\"taxableIncome\\\":{testCase.income},\\\"financialYear\\\":\\\"{testCase.year}\\\"}}\";\n                var response = MakeHttpRequest(\"POST\", $\"{BaseUrl}/api/tax/calculate\", requestBody);\n                \n                Console.WriteLine($\"   {testCase.description}:\");\n                Console.WriteLine($\"   Status: ✅ {response.StatusCode}\");\n                Console.WriteLine($\"   Income: ${testCase.income:N0} ({testCase.year})\");\n                \n                // Parse key values from response\n                var netTax = ExtractJsonValue(response.Body, \"netTaxPayable\");\n                var effectiveRate = ExtractJsonValue(response.Body, \"effectiveRate\");\n                var medicareLevy = ExtractJsonValue(response.Body, \"medicareLevy\");\n                \n                if (!string.IsNullOrEmpty(netTax))\n                    Console.WriteLine($\"   Net Tax: ${decimal.Parse(netTax):N2}\");\n                if (!string.IsNullOrEmpty(effectiveRate))\n                    Console.WriteLine($\"   Effective Rate: {(decimal.Parse(effectiveRate) * 100):F2}%\");\n                if (!string.IsNullOrEmpty(medicareLevy))\n                    Console.WriteLine($\"   Medicare Levy: ${decimal.Parse(medicareLevy):N2}\");\n            }\n            catch (Exception ex)\n            {\n                Console.WriteLine($\"   {testCase.description}: ❌ Error - {ex.Message}\");\n            }\n            Console.WriteLine();\n        }\n    }\n\n    st",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": "racketsEndpoint()\n    {",
+    "signature": "oid TestTaxBracketsEndpoint()",
+    "start_line": 93,
+    "end_line": 119,
+    "text": "oid TestTaxBracketsEndpoint()\n    {\n        Console.WriteLine(\"3. Testing Tax Brackets Endpoint\");\n        Console.WriteLine(\"   GET /api/tax/brackets/{year}\");\n\n        var years = new[] { \"2024-25\", \"2023-24\", \"2015-16\" };\n\n        foreach (var year in years)\n        {\n            try\n            {\n                var response = MakeHttpRequest(\"GET\", $\"{BaseUrl}/api/tax/brackets/{year}\", null);\n                Console.WriteLine($\"   {year} brackets: ✅ {response.StatusCode}\");\n                \n                // Count brackets in response\n                var bracketCount = response.Body.Split(new[] { \"minIncome\" }, StringSplitOptions.None).Length - 1;\n                Console.WriteLine($\"   Found {bracketCount} tax brackets\");\n            }\n            catch (Exception ex)\n            {\n                Console.WriteLine($\"   {year} brackets: ❌ Error - {ex.Message}\");\n            }\n        }\n        Console.WriteLine();\n    }\n\n    static",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": " MakeHttpReq",
+    "signature": "esponse MakeHttpRequest(string method, string url, string body)",
+    "start_line": 119,
+    "end_line": 167,
+    "text": "esponse MakeHttpRequest(string method, string url, string body)\n    {\n        var request = (HttpWebRequest)WebRequest.Create(url);\n        request.Method = method;\n        request.ContentType = \"application/json\";\n        request.Timeout = 5000; // 5 second timeout\n\n        if (!string.IsNullOrEmpty(body))\n        {\n            var data = Encoding.UTF8.GetBytes(body);\n            request.ContentLength = data.Length;\n            using (var stream = request.GetRequestStream())\n            {\n                stream.Write(data, 0, data.Length);\n            }\n        }\n\n        try\n        {\n            using (var response = (HttpWebResponse)request.GetResponse())\n            using (var stream = response.GetResponseStream())\n            using (var reader = new StreamReader(stream))\n            {\n                return new HttpResponse\n                {\n                    StatusCode = (int)response.StatusCode,\n                    Body = reader.ReadToEnd()\n                };\n            }\n        }\n        catch (WebException ex)\n        {\n            if (ex.Response != null)\n            {\n                using (var stream = ex.Response.GetResponseStream())\n                using (var reader = new StreamReader(stream))\n                {\n                    return new HttpResponse\n                    {\n                        StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode,\n                        Body = reader.ReadToEnd()\n                    };\n                }\n            }\n            throw;\n        }\n    }\n\n    static",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": "alue(string json",
+    "signature": "g ExtractJsonValue(string json, string key)",
+    "start_line": 167,
+    "end_line": 184,
+    "text": "g ExtractJsonValue(string json, string key)\n    {\n        var keyPattern = $\"\\\"{key}\\\":\";\n        var index = json.IndexOf(keyPattern);\n        if (index == -1) return null;\n\n        var valueStart = index + keyPattern.Length;\n        while (valueStart < json.Length && (json[valueStart] == ' ' || json[valueStart] == '\\t')) valueStart++;\n\n        if (valueStart >= json.Length) return null;\n\n        int valueEnd = valueStart;\n        while (valueEnd < json.Length && json[valueEnd] != ',' && json[valueEnd] != '}') valueEnd++;\n\n        return valueEnd > valueStart ? json.Substring(valueStart, valueEnd - valueStart).Trim() : null;\n    }\n\n    class ",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs"
+  },
+  {
+    "name": "Main",
+    "signature": "static void Main(string[] args)",
+    "start_line": 10,
+    "end_line": 38,
+    "text": "static void Main(string[] args)\n        {\n            System.Console.WriteLine(\"Australian Tax Calculator - Database Setup\");\n            System.Console.WriteLine(\"==========================================\");\n\n            try\n            {\n                var connectionString = ConfigurationManager.ConnectionStrings[\"DefaultConnection\"].ConnectionString;\n                \n                // Replace |DataDirectory| with current directory\n                connectionString = connectionString.Replace(\"|DataDirectory|\", Environment.CurrentDirectory);\n                \n                System.Console.WriteLine(\"Creating database schema...\");\n                ExecuteSqlScript(connectionString, \"..\\\\Database\\\\CreateDatabase.sql\");\n                \n                System.Console.WriteLine(\"Seeding historical tax data...\");\n                ExecuteSqlScript(connectionString, \"..\\\\Database\\\\SeedData.sql\");\n                \n                System.Console.WriteLine(\"Database setup completed successfully!\");\n                System.Console.WriteLine(\"\\nPress any key to exit...\");\n                System.Console.ReadKey();\n            }\n            catch (Exception ex)\n            {\n                System.Console.WriteLine($\"Error: {ex.Message}\");\n                System.Console.WriteLine(\"\\nPress any key to exit...\");\n                System.Console.ReadKey();\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Console\\Program.cs"
+  },
+  {
+    "name": "ExecuteSqlScript",
+    "signature": "static void ExecuteSqlScript(string connectionString, string scriptPath)",
+    "start_line": 40,
+    "end_line": 66,
+    "text": "static void ExecuteSqlScript(string connectionString, string scriptPath)\n        {\n            if (!File.Exists(scriptPath))\n            {\n                throw new FileNotFoundException($\"SQL script not found: {scriptPath}\");\n            }\n\n            var script = File.ReadAllText(scriptPath);\n            var batches = script.Split(new string[] { \"GO\\r\\n\", \"GO\\n\", \"GO\" }, StringSplitOptions.RemoveEmptyEntries);\n\n            using (var connection = new SqlConnection(connectionString))\n            {\n                connection.Open();\n                \n                foreach (var batch in batches)\n                {\n                    var trimmedBatch = batch.Trim();\n                    if (!string.IsNullOrEmpty(trimmedBatch))\n                    {\n                        using (var command = new SqlCommand(trimmedBatch, connection))\n                        {\n                            command.ExecuteNonQuery();\n                        }\n                    }\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Console\\Program.cs"
+  },
+  {
+    "name": "Setup",
+    "signature": "[SetUp]",
+    "start_line": 14,
+    "end_line": 18,
+    "text": "[SetUp]\n        public void Setup()\n        {\n            _cacheService = new CacheService();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 20,
+    "end_line": 34,
+    "text": "[Test]\n        public async Task SetAsync_ValidKeyValue_StoresSuccessfully()\n        {\n            // Arrange\n            var key = \"test-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n\n            // Assert\n            var retrieved = await _cacheService.GetAsync<string>(key);\n            Assert.That(retrieved, Is.EqualTo(value));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 36,
+    "end_line": 47,
+    "text": "[Test]\n        public async Task GetAsync_NonExistentKey_ReturnsNull()\n        {\n            // Arrange\n            var nonExistentKey = \"non-existent-key\";\n\n            // Act\n            var result = await _cacheService.GetAsync<string>(nonExistentKey);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 49,
+    "end_line": 67,
+    "text": "[Test]\n        public async Task GetAsync_ExpiredItem_ReturnsNull()\n        {\n            // Arrange\n            var key = \"expired-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.FromMilliseconds(50); // Very short expiration\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            \n            // Wait for expiration\n            await Task.Delay(100);\n            \n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 69,
+    "end_line": 83,
+    "text": "[Test]\n        public async Task GetAsync_ValidItem_ReturnsCorrectValue()\n        {\n            // Arrange\n            var key = \"valid-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(value));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 85,
+    "end_line": 101,
+    "text": "[Test]\n        public async Task SetAsync_OverwriteExistingKey_UpdatesValue()\n        {\n            // Arrange\n            var key = \"update-key\";\n            var originalValue = \"original-value\";\n            var updatedValue = \"updated-value\";\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, originalValue, expiration);\n            await _cacheService.SetAsync(key, updatedValue, expiration);\n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(updatedValue));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 103,
+    "end_line": 118,
+    "text": "[Test]\n        public async Task RemoveAsync_ExistingKey_RemovesItem()\n        {\n            // Arrange\n            var key = \"remove-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            await _cacheService.RemoveAsync(key);\n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 120,
+    "end_line": 128,
+    "text": "[Test]\n        public async Task RemoveAsync_NonExistentKey_DoesNotThrow()\n        {\n            // Arrange\n            var nonExistentKey = \"non-existent-key\";\n\n            // Act & Assert\n            Assert.DoesNotThrowAsync(async () => await _cacheService.RemoveAsync(nonExistentKey));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 130,
+    "end_line": 154,
+    "text": "[Test]\n        public async Task SetAsync_ComplexObject_StoresAndRetrievesCorrectly()\n        {\n            // Arrange\n            var key = \"complex-object-key\";\n            var value = new TestComplexObject\n            {\n                Id = Guid.NewGuid(),\n                Name = \"Test Object\",\n                Value = 42.5m,\n                CreatedDate = DateTime.UtcNow\n            };\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            var result = await _cacheService.GetAsync<TestComplexObject>(key);\n\n            // Assert\n            Assert.That(result, Is.Not.Null);\n            Assert.That(result.Id, Is.EqualTo(value.Id));\n            Assert.That(result.Name, Is.EqualTo(value.Name));\n            Assert.That(result.Value, Is.EqualTo(value.Value));\n            Assert.That(result.CreatedDate, Is.EqualTo(value.CreatedDate));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 156,
+    "end_line": 170,
+    "text": "[Test]\n        public async Task GetAsync_WrongType_ReturnsNull()\n        {\n            // Arrange\n            var key = \"type-mismatch-key\";\n            var value = \"string-value\";\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            var result = await _cacheService.GetAsync<TestComplexObject>(key);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 172,
+    "end_line": 186,
+    "text": "[Test]\n        public async Task SetAsync_NullValue_StoresNull()\n        {\n            // Arrange\n            var key = \"null-value-key\";\n            string value = null;\n            var expiration = TimeSpan.FromMinutes(5);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 188,
+    "end_line": 206,
+    "text": "[Test]\n        public async Task SetAsync_ZeroExpiration_ItemExpiresImmediately()\n        {\n            // Arrange\n            var key = \"zero-expiration-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.Zero;\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            \n            // Small delay to ensure the item has expired\n            await Task.Delay(1);\n            \n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.Null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 208,
+    "end_line": 222,
+    "text": "[Test]\n        public async Task SetAsync_LongExpiration_ItemPersists()\n        {\n            // Arrange\n            var key = \"long-expiration-key\";\n            var value = \"test-value\";\n            var expiration = TimeSpan.FromHours(1);\n\n            // Act\n            await _cacheService.SetAsync(key, value, expiration);\n            var result = await _cacheService.GetAsync<string>(key);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(value));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 224,
+    "end_line": 248,
+    "text": "[Test]\n        public async Task CacheService_ConcurrentAccess_HandlesCorrectly()\n        {\n            // Arrange\n            var tasks = new Task[10];\n            var baseKey = \"concurrent-key-\";\n\n            // Act\n            for (int i = 0; i < 10; i++)\n            {\n                var index = i;\n                tasks[i] = Task.Run(async () =>\n                {\n                    var key = baseKey + index;\n                    var value = \"value-\" + index;\n                    await _cacheService.SetAsync(key, value, TimeSpan.FromMinutes(5));\n                    \n                    var retrieved = await _cacheService.GetAsync<string>(key);\n                    Assert.That(retrieved, Is.EqualTo(value));\n                });\n            }\n\n            // Assert\n            Assert.DoesNotThrowAsync(async () => await Task.WhenAll(tasks));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 250,
+    "end_line": 271,
+    "text": "[Test]\n        public async Task GetAsync_AfterPartialExpiration_OnlyReturnsValidItems()\n        {\n            // Arrange\n            var shortKey = \"short-expiry-key\";\n            var longKey = \"long-expiry-key\";\n            var value = \"test-value\";\n\n            // Act\n            await _cacheService.SetAsync(shortKey, value, TimeSpan.FromMilliseconds(50));\n            await _cacheService.SetAsync(longKey, value, TimeSpan.FromMinutes(5));\n\n            // Wait for short expiry\n            await Task.Delay(100);\n\n            var shortResult = await _cacheService.GetAsync<string>(shortKey);\n            var longResult = await _cacheService.GetAsync<string>(longKey);\n\n            // Assert\n            Assert.That(shortResult, Is.Null);\n            Assert.That(longResult, Is.EqualTo(value));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs"
+  },
+  {
+    "name": "Setup",
+    "signature": "[SetUp]",
+    "start_line": 22,
+    "end_line": 33,
+    "text": "[SetUp]\n        public void Setup()\n        {\n            _mockTaxBracketRepository = new Mock<ITaxBracketRepository>();\n            _mockCacheService = new Mock<ICacheService>();\n            _mockLogger = new Mock<ILogger>();\n\n            _taxCalculationService = new TaxCalculationService(\n                _mockTaxBracketRepository.Object,\n                _mockCacheService.Object,\n                _mockLogger.Object);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 35,
+    "end_line": 77,
+    "text": "[Test]\n        public async Task CalculateTaxAsync_2024_25_Income85000_ReturnsCorrectTax()\n        {\n            // Arrange\n            var request = new TaxCalculationRequest\n            {\n                FinancialYear = \"2024-25\",\n                TaxableIncome = 85000m,\n                ResidencyStatus = \"Resident\",\n                IncludeMedicareLevy = true,\n                IncludeOffsets = true\n            };\n\n            var taxBrackets = Create2024_25TaxBrackets();\n            var medicareLevy = new List<TaxLevy>\n            {\n                new TaxLevy { LevyType = \"Medicare\", ThresholdIncome = 0, LevyRate = 0.02m, IsActive = true }\n            };\n            var offsets = new List<TaxOffset>\n            {\n                new TaxOffset { OffsetType = \"LITO\", MaxOffset = 700m, PhaseOutStart = 37500m, PhaseOutRate = 0.05m, IsActive = true }\n            };\n\n            _mockCacheService.Setup(x => x.GetAsync<List<TaxBracket>>(It.IsAny<string>()))\n                            .ReturnsAsync((List<TaxBracket>)null);\n\n            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(\"2024-25\"))\n                                    .ReturnsAsync(taxBrackets);\n            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync(\"2024-25\"))\n                                    .ReturnsAsync(medicareLevy);\n            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync(\"2024-25\"))\n                                    .ReturnsAsync(offsets);\n\n            // Act\n            var result = await _taxCalculationService.CalculateTaxAsync(request);\n\n            // Assert\n            Assert.That(result.TaxableIncome, Is.EqualTo(85000m));\n            Assert.That(result.IncomeTax, Is.GreaterThan(0));\n            Assert.That(result.MedicareLevy, Is.EqualTo(1700m).Within(1m)); // 2% of $85,000\n            Assert.That(result.NetTaxPayable, Is.GreaterThan(0));\n            Assert.That(result.EffectiveRate, Is.InRange(0.20m, 0.25m));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 79,
+    "end_line": 94,
+    "text": "[Test]\n        public async Task CalculateTaxAsync_NegativeIncome_ThrowsArgumentException()\n        {\n            // Arrange\n            var request = new TaxCalculationRequest\n            {\n                FinancialYear = \"2024-25\",\n                TaxableIncome = -1000m\n            };\n\n            // Act & Assert\n            var ex = await Assert.ThrowsAsync<ArgumentException>(\n                () => _taxCalculationService.CalculateTaxAsync(request));\n\n            Assert.That(ex.Message, Contains.Substring(\"cannot be negative\"));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[TestCase(18200, 0)] // Tax-free threshold",
+    "start_line": 96,
+    "end_line": 121,
+    "text": "[TestCase(18200, 0)] // Tax-free threshold\n        [TestCase(45000, 4288)] // End of second bracket\n        [TestCase(85000, 19238)] // Test case income\n        [TestCase(135000, 31288)] // End of third bracket\n        [TestCase(190000, 51638)] // End of fourth bracket\n        public async Task CalculateTaxAsync_2024_25_VariousIncomes_ReturnsExpectedTax(decimal income, decimal expectedTax)\n        {\n            // Arrange\n            var request = new TaxCalculationRequest\n            {\n                FinancialYear = \"2024-25\",\n                TaxableIncome = income,\n                ResidencyStatus = \"Resident\",\n                IncludeMedicareLevy = false, // Test income tax only\n                IncludeOffsets = false\n            };\n\n            var taxBrackets = Create2024_25TaxBrackets();\n            SetupMocksForTaxBrackets(\"2024-25\", taxBrackets);\n\n            // Act\n            var result = await _taxCalculationService.CalculateTaxAsync(request);\n\n            // Assert\n            Assert.That(result.IncomeTax, Is.EqualTo(expectedTax).Within(50m));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 123,
+    "end_line": 152,
+    "text": "[Test]\n        public async Task CalculateTaxAsync_WithMedicareLevy_CalculatesCorrectly()\n        {\n            // Arrange\n            var request = new TaxCalculationRequest\n            {\n                FinancialYear = \"2024-25\",\n                TaxableIncome = 100000m,\n                IncludeMedicareLevy = true\n            };\n\n            var taxBrackets = Create2024_25TaxBrackets();\n            var medicareLevy = new List<TaxLevy>\n            {\n                new TaxLevy { LevyType = \"Medicare\", ThresholdIncome = 0, LevyRate = 0.02m, IsActive = true }\n            };\n\n            SetupMocksForTaxBrackets(\"2024-25\", taxBrackets);\n            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync(\"2024-25\"))\n                                    .ReturnsAsync(medicareLevy);\n            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync(\"2024-25\"))\n                                    .ReturnsAsync(new List<TaxOffset>());\n\n            // Act\n            var result = await _taxCalculationService.CalculateTaxAsync(request);\n\n            // Assert\n            Assert.That(result.MedicareLevy, Is.EqualTo(2000m)); // 2% of $100,000\n            Assert.That(result.TotalLevies, Is.EqualTo(2000m));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 154,
+    "end_line": 189,
+    "text": "[Test]\n        public async Task CalculateTaxAsync_WithLITO_AppliesOffsetCorrectly()\n        {\n            // Arrange\n            var request = new TaxCalculationRequest\n            {\n                FinancialYear = \"2024-25\",\n                TaxableIncome = 30000m,\n                IncludeOffsets = true\n            };\n\n            var taxBrackets = Create2024_25TaxBrackets();\n            var offsets = new List<TaxOffset>\n            {\n                new TaxOffset \n                { \n                    OffsetType = \"LITO\", \n                    MaxOffset = 700m, \n                    PhaseOutStart = 37500m, \n                    PhaseOutRate = 0.05m, \n                    IsActive = true \n                }\n            };\n\n            SetupMocksForTaxBrackets(\"2024-25\", taxBrackets);\n            _mockTaxBracketRepository.Setup(x => x.GetTaxLeviesAsync(\"2024-25\"))\n                                    .ReturnsAsync(new List<TaxLevy>());\n            _mockTaxBracketRepository.Setup(x => x.GetTaxOffsetsAsync(\"2024-25\"))\n                                    .ReturnsAsync(offsets);\n\n            // Act\n            var result = await _taxCalculationService.CalculateTaxAsync(request);\n\n            // Assert\n            Assert.That(result.TaxOffsets, Is.EqualTo(700m)); // Full LITO for income under phase-out threshold\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 191,
+    "end_line": 208,
+    "text": "[Test]\n        public async Task GetTaxBracketsAsync_ValidYear_ReturnsBrackets()\n        {\n            // Arrange\n            var year = \"2024-25\";\n            var expectedBrackets = Create2024_25TaxBrackets();\n\n            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(year))\n                                    .ReturnsAsync(expectedBrackets);\n\n            // Act\n            var result = await _taxCalculationService.GetTaxBracketsAsync(year);\n\n            // Assert\n            Assert.That(result.Count, Is.EqualTo(5)); // 2024-25 has 5 tax brackets\n            Assert.That(result.First().MinIncome, Is.EqualTo(0));\n            Assert.That(result.Last().MaxIncome, Is.Null); // Highest bracket has no upper limit\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Create2024_25TaxBrackets",
+    "signature": "private List<TaxBracket> Create2024_25TaxBrackets()",
+    "start_line": 210,
+    "end_line": 220,
+    "text": "private List<TaxBracket> Create2024_25TaxBrackets()\n        {\n            return new List<TaxBracket>\n            {\n                new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0m, FixedAmount = 0m, BracketOrder = 1, IsActive = true },\n                new TaxBracket { MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.16m, FixedAmount = 0m, BracketOrder = 2, IsActive = true },\n                new TaxBracket { MinIncome = 45001, MaxIncome = 135000, TaxRate = 0.30m, FixedAmount = 4288m, BracketOrder = 3, IsActive = true },\n                new TaxBracket { MinIncome = 135001, MaxIncome = 190000, TaxRate = 0.37m, FixedAmount = 31288m, BracketOrder = 4, IsActive = true },\n                new TaxBracket { MinIncome = 190001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51638m, BracketOrder = 5, IsActive = true }\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "SetupMocksForTaxBrackets",
+    "signature": "private void SetupMocksForTaxBrackets(string year, List<TaxBracket> brackets)",
+    "start_line": 222,
+    "end_line": 229,
+    "text": "private void SetupMocksForTaxBrackets(string year, List<TaxBracket> brackets)\n        {\n            _mockCacheService.Setup(x => x.GetAsync<List<TaxBracket>>(It.IsAny<string>()))\n                            .ReturnsAsync((List<TaxBracket>)null);\n\n            _mockTaxBracketRepository.Setup(x => x.GetTaxBracketsAsync(year))\n                                    .ReturnsAsync(brackets);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs"
+  },
+  {
+    "name": "Setup",
+    "signature": "[SetUp]",
+    "start_line": 25,
+    "end_line": 36,
+    "text": "[SetUp]\n        public void Setup()\n        {\n            _mockUserIncomeRepository = new Mock<IUserIncomeRepository>();\n            _mockTaxCalculationService = new Mock<ITaxCalculationService>();\n            _mockLogger = new Mock<ILogger>();\n\n            _userTaxService = new UserTaxService(\n                _mockUserIncomeRepository.Object,\n                _mockTaxCalculationService.Object,\n                _mockLogger.Object);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 38,
+    "end_line": 78,
+    "text": "[Test]\n        public async Task CalculateAnnualTaxAsync_ValidInput_ReturnsCorrectSummary()\n        {\n            // Arrange\n            var monthlyIncomes = CreateCompleteMonthlyIncomeData();\n            var taxResult = CreateSampleTaxResult();\n\n            _mockUserIncomeRepository.Setup(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(monthlyIncomes);\n\n            _mockTaxCalculationService.Setup(x => x.CalculateTaxAsync(It.IsAny<TaxCalculationRequest>()))\n                                     .ReturnsAsync(taxResult);\n\n            _mockUserIncomeRepository.Setup(x => x.SaveAnnualSummaryAsync(It.IsAny<UserAnnualTaxSummary>()))\n                                   .Returns(Task.CompletedTask);\n\n            // Act\n            var result = await _userTaxService.CalculateAnnualTaxAsync(_testUserId, _testFinancialYear);\n\n            // Assert\n            Assert.That(result.UserId, Is.EqualTo(_testUserId));\n            Assert.That(result.FinancialYear, Is.EqualTo(_testFinancialYear));\n            Assert.That(result.TotalGrossIncome, Is.EqualTo(120000m)); // 12 months * 10,000\n            Assert.That(result.TotalDeductions, Is.EqualTo(12000m)); // 12 months * 1,000\n            Assert.That(result.TotalTaxableIncome, Is.EqualTo(108000m)); // 12 months * 9,000\n            Assert.That(result.IncomeTaxPayable, Is.EqualTo(taxResult.IncomeTax));\n            Assert.That(result.MedicareLevyPayable, Is.EqualTo(taxResult.MedicareLevy));\n            Assert.That(result.NetTaxPayable, Is.EqualTo(taxResult.NetTaxPayable));\n            Assert.That(result.MonthlyBreakdown.Count, Is.EqualTo(12));\n            Assert.That(result.LastCalculated, Is.GreaterThan(DateTime.UtcNow.AddMinutes(-1)));\n\n            // Verify calls\n            _mockUserIncomeRepository.Verify(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear), Times.Once);\n            _mockTaxCalculationService.Verify(x => x.CalculateTaxAsync(It.Is<TaxCalculationRequest>(r => \n                r.TaxableIncome == 108000m && \n                r.FinancialYear == _testFinancialYear &&\n                r.ResidencyStatus == \"Resident\" &&\n                r.IncludeMedicareLevy == true &&\n                r.IncludeOffsets == true)), Times.Once);\n            _mockUserIncomeRepository.Verify(x => x.SaveAnnualSummaryAsync(It.IsAny<UserAnnualTaxSummary>()), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 80,
+    "end_line": 98,
+    "text": "[Test]\n        public async Task CalculateAnnualTaxAsync_IncompleteMonthlyData_ThrowsInvalidOperationException()\n        {\n            // Arrange\n            var incompleteMonthlyIncomes = CreateCompleteMonthlyIncomeData().Take(8).ToList(); // Only 8 months\n\n            _mockUserIncomeRepository.Setup(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(incompleteMonthlyIncomes);\n\n            // Act & Assert\n            var ex = await Assert.ThrowsAsync<InvalidOperationException>(\n                () => _userTaxService.CalculateAnnualTaxAsync(_testUserId, _testFinancialYear));\n\n            Assert.That(ex.Message, Contains.Substring(\"Incomplete monthly income data\"));\n            Assert.That(ex.Message, Contains.Substring(\"Found 8 months, expected 12\"));\n\n            // Verify tax calculation was not called\n            _mockTaxCalculationService.Verify(x => x.CalculateTaxAsync(It.IsAny<TaxCalculationRequest>()), Times.Never);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 100,
+    "end_line": 132,
+    "text": "[Test]\n        public async Task CalculateAnnualTaxAsync_ZeroIncome_HandlesCorrectly()\n        {\n            // Arrange\n            var monthlyIncomes = CreateMonthlyIncomeDataWithZeros();\n            var taxResult = new TaxCalculationResult\n            {\n                TaxableIncome = 0m,\n                IncomeTax = 0m,\n                MedicareLevy = 0m,\n                NetTaxPayable = 0m,\n                EffectiveRate = 0m,\n                MarginalRate = 0m\n            };\n\n            _mockUserIncomeRepository.Setup(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(monthlyIncomes);\n\n            _mockTaxCalculationService.Setup(x => x.CalculateTaxAsync(It.IsAny<TaxCalculationRequest>()))\n                                     .ReturnsAsync(taxResult);\n\n            _mockUserIncomeRepository.Setup(x => x.SaveAnnualSummaryAsync(It.IsAny<UserAnnualTaxSummary>()))\n                                   .Returns(Task.CompletedTask);\n\n            // Act\n            var result = await _userTaxService.CalculateAnnualTaxAsync(_testUserId, _testFinancialYear);\n\n            // Assert\n            Assert.That(result.TotalGrossIncome, Is.EqualTo(0m));\n            Assert.That(result.TotalTaxableIncome, Is.EqualTo(0m));\n            Assert.That(result.IncomeTaxPayable, Is.EqualTo(0m));\n            Assert.That(result.NetTaxPayable, Is.EqualTo(0m));\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 134,
+    "end_line": 149,
+    "text": "[Test]\n        public async Task GetMonthlyIncomeAsync_ValidInput_ReturnsRepositoryResult()\n        {\n            // Arrange\n            var expectedIncomes = CreateCompleteMonthlyIncomeData();\n\n            _mockUserIncomeRepository.Setup(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(expectedIncomes);\n\n            // Act\n            var result = await _userTaxService.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(expectedIncomes));\n            _mockUserIncomeRepository.Verify(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 151,
+    "end_line": 173,
+    "text": "[Test]\n        public async Task SaveMonthlyIncomeAsync_ValidInput_CallsRepository()\n        {\n            // Arrange\n            var income = new UserMonthlyIncome\n            {\n                UserId = _testUserId,\n                FinancialYear = _testFinancialYear,\n                Month = 1,\n                GrossIncome = 10000m,\n                DeductionsAmount = 1000m,\n                TaxableIncome = 9000m\n            };\n\n            _mockUserIncomeRepository.Setup(x => x.SaveMonthlyIncomeAsync(income))\n                                   .Returns(Task.CompletedTask);\n\n            // Act\n            await _userTaxService.SaveMonthlyIncomeAsync(income);\n\n            // Assert\n            _mockUserIncomeRepository.Verify(x => x.SaveMonthlyIncomeAsync(income), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 175,
+    "end_line": 190,
+    "text": "[Test]\n        public async Task GetAnnualSummaryAsync_ValidInput_ReturnsRepositoryResult()\n        {\n            // Arrange\n            var expectedSummary = CreateSampleAnnualSummary();\n\n            _mockUserIncomeRepository.Setup(x => x.GetAnnualSummaryAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(expectedSummary);\n\n            // Act\n            var result = await _userTaxService.GetAnnualSummaryAsync(_testUserId, _testFinancialYear);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(expectedSummary));\n            _mockUserIncomeRepository.Verify(x => x.GetAnnualSummaryAsync(_testUserId, _testFinancialYear), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 192,
+    "end_line": 211,
+    "text": "[Test]\n        public async Task GetTaxHistoryAsync_WithDefaultYears_ReturnsRepositoryResult()\n        {\n            // Arrange\n            var expectedHistory = new List<UserAnnualTaxSummary>\n            {\n                CreateSampleAnnualSummary(),\n                CreateSampleAnnualSummary()\n            };\n\n            _mockUserIncomeRepository.Setup(x => x.GetTaxHistoryAsync(_testUserId, 5))\n                                   .ReturnsAsync(expectedHistory);\n\n            // Act\n            var result = await _userTaxService.GetTaxHistoryAsync(_testUserId);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(expectedHistory));\n            _mockUserIncomeRepository.Verify(x => x.GetTaxHistoryAsync(_testUserId, 5), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 213,
+    "end_line": 232,
+    "text": "[Test]\n        public async Task GetTaxHistoryAsync_WithCustomYears_ReturnsRepositoryResult()\n        {\n            // Arrange\n            var customYears = 3;\n            var expectedHistory = new List<UserAnnualTaxSummary>\n            {\n                CreateSampleAnnualSummary()\n            };\n\n            _mockUserIncomeRepository.Setup(x => x.GetTaxHistoryAsync(_testUserId, customYears))\n                                   .ReturnsAsync(expectedHistory);\n\n            // Act\n            var result = await _userTaxService.GetTaxHistoryAsync(_testUserId, customYears);\n\n            // Assert\n            Assert.That(result, Is.EqualTo(expectedHistory));\n            _mockUserIncomeRepository.Verify(x => x.GetTaxHistoryAsync(_testUserId, customYears), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "[Test]",
+    "start_line": 234,
+    "end_line": 256,
+    "text": "[Test]\n        public async Task CalculateAnnualTaxAsync_LogsInformation()\n        {\n            // Arrange\n            var monthlyIncomes = CreateCompleteMonthlyIncomeData();\n            var taxResult = CreateSampleTaxResult();\n\n            _mockUserIncomeRepository.Setup(x => x.GetMonthlyIncomeAsync(_testUserId, _testFinancialYear))\n                                   .ReturnsAsync(monthlyIncomes);\n            _mockTaxCalculationService.Setup(x => x.CalculateTaxAsync(It.IsAny<TaxCalculationRequest>()))\n                                     .ReturnsAsync(taxResult);\n            _mockUserIncomeRepository.Setup(x => x.SaveAnnualSummaryAsync(It.IsAny<UserAnnualTaxSummary>()))\n                                   .Returns(Task.CompletedTask);\n\n            // Act\n            await _userTaxService.CalculateAnnualTaxAsync(_testUserId, _testFinancialYear);\n\n            // Assert\n            _mockLogger.Verify(x => x.LogInformation(It.Is<string>(s => \n                s.Contains(\"Calculating annual tax\") && \n                s.Contains(_testUserId.ToString()) && \n                s.Contains(_testFinancialYear))), Times.Once);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "CreateCompleteMonthlyIncomeData",
+    "signature": "private List<UserMonthlyIncome> CreateCompleteMonthlyIncomeData()",
+    "start_line": 258,
+    "end_line": 275,
+    "text": "private List<UserMonthlyIncome> CreateCompleteMonthlyIncomeData()\n        {\n            var incomes = new List<UserMonthlyIncome>();\n            for (int month = 1; month <= 12; month++)\n            {\n                incomes.Add(new UserMonthlyIncome\n                {\n                    UserId = _testUserId,\n                    FinancialYear = _testFinancialYear,\n                    Month = month,\n                    GrossIncome = 10000m,\n                    DeductionsAmount = 1000m,\n                    TaxableIncome = 9000m,\n                    IncomeType = \"Salary\"\n                });\n            }\n            return incomes;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "CreateMonthlyIncomeDataWithZeros",
+    "signature": "private List<UserMonthlyIncome> CreateMonthlyIncomeDataWithZeros()",
+    "start_line": 277,
+    "end_line": 294,
+    "text": "private List<UserMonthlyIncome> CreateMonthlyIncomeDataWithZeros()\n        {\n            var incomes = new List<UserMonthlyIncome>();\n            for (int month = 1; month <= 12; month++)\n            {\n                incomes.Add(new UserMonthlyIncome\n                {\n                    UserId = _testUserId,\n                    FinancialYear = _testFinancialYear,\n                    Month = month,\n                    GrossIncome = 0m,\n                    DeductionsAmount = 0m,\n                    TaxableIncome = 0m,\n                    IncomeType = \"Salary\"\n                });\n            }\n            return incomes;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "TaxCalculationResult",
+    "signature": "private TaxCalculationResult CreateSampleTaxResult()",
+    "start_line": 296,
+    "end_line": 310,
+    "text": "private TaxCalculationResult CreateSampleTaxResult()\n        {\n            return new TaxCalculationResult\n            {\n                TaxableIncome = 108000m,\n                IncomeTax = 22800m,\n                MedicareLevy = 2160m,\n                BudgetRepairLevy = 0m,\n                TotalLevies = 2160m,\n                TaxOffsets = 700m,\n                NetTaxPayable = 24260m,\n                EffectiveRate = 0.2246m,\n                MarginalRate = 0.30m\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "UserAnnualTaxSummary",
+    "signature": "private UserAnnualTaxSummary CreateSampleAnnualSummary()",
+    "start_line": 312,
+    "end_line": 327,
+    "text": "private UserAnnualTaxSummary CreateSampleAnnualSummary()\n        {\n            return new UserAnnualTaxSummary\n            {\n                UserId = _testUserId,\n                FinancialYear = _testFinancialYear,\n                TotalGrossIncome = 120000m,\n                TotalDeductions = 12000m,\n                TotalTaxableIncome = 108000m,\n                IncomeTaxPayable = 22800m,\n                MedicareLevyPayable = 2160m,\n                NetTaxPayable = 24260m,\n                EffectiveTaxRate = 0.2246m,\n                LastCalculated = DateTime.UtcNow\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs"
+  },
+  {
+    "name": "TaxCalculationResult",
+    "signature": "public TaxCalculationResult CalculateTax(TaxCalculationRequest request)",
+    "start_line": 16,
+    "end_line": 51,
+    "text": "public TaxCalculationResult CalculateTax(TaxCalculationRequest request)\n        {\n            if (request.TaxableIncome < 0)\n                throw new ArgumentException(\"Taxable income cannot be negative\");\n\n            var brackets = _taxBrackets.ContainsKey(request.FinancialYear) \n                ? _taxBrackets[request.FinancialYear] \n                : _taxBrackets[\"2024-25\"]; // Default to current year\n\n            var incomeTax = CalculateProgressiveIncomeTax(request.TaxableIncome, brackets);\n            var medicareLevy = request.IncludeMedicareLevy ? request.TaxableIncome * 0.02m : 0;\n            var budgetRepairLevy = CalculateBudgetRepairLevy(request.TaxableIncome, request.FinancialYear);\n            var taxOffsets = request.IncludeOffsets ? CalculateLITO(request.TaxableIncome) : 0;\n\n            var totalLevies = medicareLevy + budgetRepairLevy;\n            var grossTax = incomeTax + totalLevies;\n            var netTaxPayable = Math.Max(0, grossTax - taxOffsets);\n            var netIncome = request.TaxableIncome - netTaxPayable;\n            var effectiveRate = request.TaxableIncome > 0 ? netTaxPayable / request.TaxableIncome : 0;\n            var marginalRate = GetMarginalTaxRate(request.TaxableIncome, brackets);\n\n            return new TaxCalculationResult\n            {\n                TaxableIncome = request.TaxableIncome,\n                IncomeTax = incomeTax,\n                MedicareLevy = medicareLevy,\n                BudgetRepairLevy = budgetRepairLevy,\n                TotalLevies = totalLevies,\n                TaxOffsets = taxOffsets,\n                NetTaxPayable = netTaxPayable,\n                NetIncome = netIncome,\n                EffectiveRate = effectiveRate,\n                MarginalRate = marginalRate,\n                CalculationBreakdown = $\"Income Tax: ${incomeTax:N2}, Medicare: ${medicareLevy:N2}, Offsets: ${taxOffsets:N2}\"\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "CalculateProgressiveIncomeTax",
+    "signature": "private decimal CalculateProgressiveIncomeTax(decimal income, List<TaxBracket> brackets)",
+    "start_line": 53,
+    "end_line": 74,
+    "text": "private decimal CalculateProgressiveIncomeTax(decimal income, List<TaxBracket> brackets)\n        {\n            decimal totalTax = 0;\n\n            foreach (var bracket in brackets.OrderBy(b => b.BracketOrder))\n            {\n                if (income <= bracket.MinIncome) continue;\n\n                var bracketMax = bracket.MaxIncome ?? decimal.MaxValue;\n                var taxableInBracket = Math.Min(income, bracketMax) - bracket.MinIncome + 1;\n\n                if (taxableInBracket > 0)\n                {\n                    var taxInBracket = bracket.FixedAmount + (taxableInBracket * bracket.TaxRate);\n                    totalTax = taxInBracket; // For progressive calculation, take the applicable bracket\n                }\n\n                if (income <= bracketMax) break;\n            }\n\n            return totalTax;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "CalculateBudgetRepairLevy",
+    "signature": "private decimal CalculateBudgetRepairLevy(decimal income, string financialYear)",
+    "start_line": 76,
+    "end_line": 85,
+    "text": "private decimal CalculateBudgetRepairLevy(decimal income, string financialYear)\n        {\n            // Budget Repair Levy: 2% on income >$180k (2015-16 to 2017-18)\n            var budgetRepairYears = new[] { \"2015-16\", \"2016-17\", \"2017-18\" };\n            if (budgetRepairYears.Contains(financialYear) && income > 180000)\n            {\n                return income * 0.02m;\n            }\n            return 0;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "CalculateLITO",
+    "signature": "private decimal CalculateLITO(decimal income)",
+    "start_line": 87,
+    "end_line": 93,
+    "text": "private decimal CalculateLITO(decimal income)\n        {\n            // Low Income Tax Offset - simplified calculation\n            if (income <= 37500) return 700m;\n            if (income <= 45000) return Math.Max(0, 700m - ((income - 37500) * 0.05m));\n            return 0;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "GetMarginalTaxRate",
+    "signature": "private decimal GetMarginalTaxRate(decimal income, List<TaxBracket> brackets)",
+    "start_line": 95,
+    "end_line": 103,
+    "text": "private decimal GetMarginalTaxRate(decimal income, List<TaxBracket> brackets)\n        {\n            var applicableBracket = brackets\n                .Where(b => income >= b.MinIncome && (b.MaxIncome == null || income <= b.MaxIncome))\n                .OrderBy(b => b.BracketOrder)\n                .FirstOrDefault();\n\n            return applicableBracket?.TaxRate ?? 0;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "InitializeTaxBrackets",
+    "signature": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()",
+    "start_line": 105,
+    "end_line": 134,
+    "text": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()\n        {\n            return new Dictionary<string, List<TaxBracket>>\n            {\n                [\"2024-25\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.16m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 45001, MaxIncome = 135000, TaxRate = 0.30m, FixedAmount = 4288, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 135001, MaxIncome = 190000, TaxRate = 0.37m, FixedAmount = 31288, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 190001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51638, BracketOrder = 5 }\n                },\n                [\"2023-24\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.19m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 45001, MaxIncome = 120000, TaxRate = 0.325m, FixedAmount = 5092, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 120001, MaxIncome = 180000, TaxRate = 0.37m, FixedAmount = 29467, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 180001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51667, BracketOrder = 5 }\n                },\n                [\"2015-16\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 37000, TaxRate = 0.19m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 37001, MaxIncome = 80000, TaxRate = 0.325m, FixedAmount = 3572, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 80001, MaxIncome = 180000, TaxRate = 0.37m, FixedAmount = 17547, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 180001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 54547, BracketOrder = 5 }\n                }\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs"
+  },
+  {
+    "name": "Start",
+    "signature": "public void Start()",
+    "start_line": 24,
+    "end_line": 46,
+    "text": "public void Start()\n        {\n            _listener.Start();\n            Console.WriteLine($\"Tax Calculator API Server started at {_baseUrl}\");\n            Console.WriteLine(\"Available endpoints:\");\n            Console.WriteLine($\"  GET  {_baseUrl}api/health\");\n            Console.WriteLine($\"  POST {_baseUrl}api/tax/calculate\");\n            Console.WriteLine($\"  GET  {_baseUrl}api/tax/brackets/{{year}}\");\n            Console.WriteLine();\n\n            while (_listener.IsListening)\n            {\n                try\n                {\n                    var context = _listener.GetContext();\n                    ProcessRequest(context);\n                }\n                catch (Exception ex)\n                {\n                    Console.WriteLine($\"Error processing request: {ex.Message}\");\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "Stop",
+    "signature": "public void Stop()",
+    "start_line": 48,
+    "end_line": 51,
+    "text": "public void Stop()\n        {\n            _listener?.Stop();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "ProcessRequest",
+    "signature": "private void ProcessRequest(HttpListenerContext context)",
+    "start_line": 53,
+    "end_line": 108,
+    "text": "private void ProcessRequest(HttpListenerContext context)\n        {\n            var request = context.Request;\n            var response = context.Response;\n\n            Console.WriteLine($\"[{DateTime.Now:HH:mm:ss}] {request.HttpMethod} {request.Url.AbsolutePath}\");\n\n            try\n            {\n                string responseText = \"\";\n                int statusCode = 200;\n\n                var path = request.Url.AbsolutePath.ToLower();\n                var method = request.HttpMethod.ToUpper();\n\n                if (path == \"/api/health\" && method == \"GET\")\n                {\n                    responseText = \"{\\\"status\\\":\\\"OK\\\",\\\"timestamp\\\":\\\"\" + DateTime.UtcNow.ToString(\"o\") + \"\\\"}\";\n                }\n                else if (path == \"/api/tax/calculate\" && method == \"POST\")\n                {\n                    responseText = HandleTaxCalculation(request);\n                }\n                else if (path.StartsWith(\"/api/tax/brackets/\") && method == \"GET\")\n                {\n                    var year = path.Substring(\"/api/tax/brackets/\".Length);\n                    responseText = HandleGetTaxBrackets(year);\n                }\n                else\n                {\n                    statusCode = 404;\n                    responseText = \"{\\\"error\\\":\\\"Endpoint not found\\\"}\";\n                }\n\n                response.StatusCode = statusCode;\n                response.ContentType = \"application/json\";\n                response.ContentEncoding = Encoding.UTF8;\n\n                var buffer = Encoding.UTF8.GetBytes(responseText);\n                response.ContentLength64 = buffer.Length;\n                response.OutputStream.Write(buffer, 0, buffer.Length);\n            }\n            catch (Exception ex)\n            {\n                Console.WriteLine($\"Error handling request: {ex.Message}\");\n                response.StatusCode = 500;\n                var errorResponse = \"{\\\"error\\\":\\\"Internal server error\\\"}\";\n                var errorBuffer = Encoding.UTF8.GetBytes(errorResponse);\n                response.ContentLength64 = errorBuffer.Length;\n                response.OutputStream.Write(errorBuffer, 0, errorBuffer.Length);\n            }\n            finally\n            {\n                response.OutputStream.Close();\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "HandleTaxCalculation",
+    "signature": "private string HandleTaxCalculation(HttpListenerRequest request)",
+    "start_line": 110,
+    "end_line": 134,
+    "text": "private string HandleTaxCalculation(HttpListenerRequest request)\n        {\n            using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))\n            {\n                var body = reader.ReadToEnd();\n                Console.WriteLine($\"Request body: {body}\");\n\n                // Simple JSON parsing for demo (in production, use proper JSON library)\n                var income = ExtractJsonValue(body, \"taxableIncome\");\n                var year = ExtractJsonValue(body, \"financialYear\");\n\n                if (string.IsNullOrEmpty(income) || string.IsNullOrEmpty(year))\n                {\n                    return \"{\\\"error\\\":\\\"Missing required fields: taxableIncome, financialYear\\\"}\";\n                }\n\n                if (!decimal.TryParse(income, out var taxableIncome))\n                {\n                    return \"{\\\"error\\\":\\\"Invalid taxable income\\\"}\";\n                }\n\n                var result = CalculateTax(taxableIncome, year);\n                return SerializeTaxResult(result);\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "HandleGetTaxBrackets",
+    "signature": "private string HandleGetTaxBrackets(string year)",
+    "start_line": 136,
+    "end_line": 152,
+    "text": "private string HandleGetTaxBrackets(string year)\n        {\n            if (_taxBrackets.ContainsKey(year))\n            {\n                var brackets = _taxBrackets[year];\n                var json = \"[\";\n                for (int i = 0; i < brackets.Count; i++)\n                {\n                    if (i > 0) json += \",\";\n                    var bracket = brackets[i];\n                    json += $\"{{\\\"minIncome\\\":{bracket.MinIncome},\\\"maxIncome\\\":{(bracket.MaxIncome?.ToString() ?? \"null\")},\\\"taxRate\\\":{bracket.TaxRate},\\\"fixedAmount\\\":{bracket.FixedAmount}}}\";\n                }\n                json += \"]\";\n                return json;\n            }\n            return \"{\\\"error\\\":\\\"Tax brackets not found for year: \" + year + \"\\\"}\";\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "TaxCalculationResult",
+    "signature": "private TaxCalculationResult CalculateTax(decimal income, string year)",
+    "start_line": 154,
+    "end_line": 197,
+    "text": "private TaxCalculationResult CalculateTax(decimal income, string year)\n        {\n            var brackets = _taxBrackets.ContainsKey(year) ? _taxBrackets[year] : _taxBrackets[\"2024-25\"];\n            \n            decimal totalTax = 0;\n            foreach (var bracket in brackets)\n            {\n                if (income <= bracket.MinIncome) continue;\n\n                var bracketMax = bracket.MaxIncome ?? decimal.MaxValue;\n                if (income > bracketMax)\n                {\n                    var taxableInBracket = bracketMax - bracket.MinIncome + 1;\n                    totalTax = bracket.FixedAmount + (taxableInBracket * bracket.TaxRate);\n                }\n                else\n                {\n                    var taxableInBracket = income - bracket.MinIncome + 1;\n                    totalTax = bracket.FixedAmount + (taxableInBracket * bracket.TaxRate);\n                    break;\n                }\n            }\n\n            var medicareLevy = income * 0.02m;\n            var budgetRepairLevy = (year == \"2015-16\" || year == \"2016-17\" || year == \"2017-18\") && income > 180000 ? income * 0.02m : 0;\n            var lito = income <= 37500 ? 700m : (income <= 45000 ? Math.Max(0, 700m - ((income - 37500) * 0.05m)) : 0);\n\n            var grossTax = totalTax + medicareLevy + budgetRepairLevy;\n            var netTax = Math.Max(0, grossTax - lito);\n\n            return new TaxCalculationResult\n            {\n                TaxableIncome = income,\n                IncomeTax = totalTax,\n                MedicareLevy = medicareLevy,\n                BudgetRepairLevy = budgetRepairLevy,\n                TotalLevies = medicareLevy + budgetRepairLevy,\n                TaxOffsets = lito,\n                NetTaxPayable = netTax,\n                NetIncome = income - netTax,\n                EffectiveRate = income > 0 ? netTax / income : 0,\n                MarginalRate = GetMarginalRate(income, brackets)\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "GetMarginalRate",
+    "signature": "private decimal GetMarginalRate(decimal income, List<TaxBracket> brackets)",
+    "start_line": 199,
+    "end_line": 207,
+    "text": "private decimal GetMarginalRate(decimal income, List<TaxBracket> brackets)\n        {\n            foreach (var bracket in brackets)\n            {\n                if (income >= bracket.MinIncome && (bracket.MaxIncome == null || income <= bracket.MaxIncome))\n                    return bracket.TaxRate;\n            }\n            return 0;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "SerializeTaxResult",
+    "signature": "private string SerializeTaxResult(TaxCalculationResult result)",
+    "start_line": 209,
+    "end_line": 223,
+    "text": "private string SerializeTaxResult(TaxCalculationResult result)\n        {\n            return $\"{{\" +\n                   $\"\\\"taxableIncome\\\":{result.TaxableIncome},\" +\n                   $\"\\\"incomeTax\\\":{result.IncomeTax:F2},\" +\n                   $\"\\\"medicareLevy\\\":{result.MedicareLevy:F2},\" +\n                   $\"\\\"budgetRepairLevy\\\":{result.BudgetRepairLevy:F2},\" +\n                   $\"\\\"totalLevies\\\":{result.TotalLevies:F2},\" +\n                   $\"\\\"taxOffsets\\\":{result.TaxOffsets:F2},\" +\n                   $\"\\\"netTaxPayable\\\":{result.NetTaxPayable:F2},\" +\n                   $\"\\\"netIncome\\\":{result.NetIncome:F2},\" +\n                   $\"\\\"effectiveRate\\\":{result.EffectiveRate:F4},\" +\n                   $\"\\\"marginalRate\\\":{result.MarginalRate:F4}\" +\n                   $\"}}\";\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "ExtractJsonValue",
+    "signature": "private string ExtractJsonValue(string json, string key)",
+    "start_line": 225,
+    "end_line": 252,
+    "text": "private string ExtractJsonValue(string json, string key)\n        {\n            var keyPattern = $\"\\\"{key}\\\"\";\n            var index = json.IndexOf(keyPattern);\n            if (index == -1) return null;\n\n            var colonIndex = json.IndexOf(\":\", index);\n            if (colonIndex == -1) return null;\n\n            var valueStart = colonIndex + 1;\n            while (valueStart < json.Length && (json[valueStart] == ' ' || json[valueStart] == '\\t')) valueStart++;\n\n            if (valueStart >= json.Length) return null;\n\n            int valueEnd;\n            if (json[valueStart] == '\"')\n            {\n                valueStart++; // Skip opening quote\n                valueEnd = json.IndexOf('\"', valueStart);\n            }\n            else\n            {\n                valueEnd = valueStart;\n                while (valueEnd < json.Length && json[valueEnd] != ',' && json[valueEnd] != '}') valueEnd++;\n            }\n\n            return valueEnd > valueStart ? json.Substring(valueStart, valueEnd - valueStart).Trim() : null;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "InitializeTaxBrackets",
+    "signature": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()",
+    "start_line": 254,
+    "end_line": 283,
+    "text": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()\n        {\n            return new Dictionary<string, List<TaxBracket>>\n            {\n                [\"2024-25\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.16m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 45001, MaxIncome = 135000, TaxRate = 0.30m, FixedAmount = 4288, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 135001, MaxIncome = 190000, TaxRate = 0.37m, FixedAmount = 31288, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 190001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51638, BracketOrder = 5 }\n                },\n                [\"2023-24\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 45000, TaxRate = 0.19m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 45001, MaxIncome = 120000, TaxRate = 0.325m, FixedAmount = 5092, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 120001, MaxIncome = 180000, TaxRate = 0.37m, FixedAmount = 29467, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 180001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 51667, BracketOrder = 5 }\n                },\n                [\"2015-16\"] = new List<TaxBracket>\n                {\n                    new TaxBracket { MinIncome = 0, MaxIncome = 18200, TaxRate = 0.00m, FixedAmount = 0, BracketOrder = 1 },\n                    new TaxBracket { MinIncome = 18201, MaxIncome = 37000, TaxRate = 0.19m, FixedAmount = 0, BracketOrder = 2 },\n                    new TaxBracket { MinIncome = 37001, MaxIncome = 80000, TaxRate = 0.325m, FixedAmount = 3572, BracketOrder = 3 },\n                    new TaxBracket { MinIncome = 80001, MaxIncome = 180000, TaxRate = 0.37m, FixedAmount = 17547, BracketOrder = 4 },\n                    new TaxBracket { MinIncome = 180001, MaxIncome = null, TaxRate = 0.45m, FixedAmount = 54547, BracketOrder = 5 }\n                }\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs"
+  },
+  {
+    "name": "Main",
+    "signature": "static void Main(string[] args)",
+    "start_line": 11,
+    "end_line": 79,
+    "text": "static void Main(string[] args)\n        {\n            Console.WriteLine(\"===============================================\");\n            Console.WriteLine(\"Australian Tax Calculator - Standalone API\");\n            Console.WriteLine(\"(.NET Framework 4.8 Implementation)\");\n            Console.WriteLine(\"===============================================\");\n            Console.WriteLine();\n\n            var baseUrl = \"http://localhost:8080/\";\n            if (args.Length > 0)\n            {\n                baseUrl = args[0];\n            }\n\n            Console.WriteLine($\"Starting server on {baseUrl}\");\n            Console.WriteLine(\"Press Ctrl+C to stop the server\");\n            Console.WriteLine();\n\n            // Handle Ctrl+C gracefully\n            Console.CancelKeyPress += (sender, e) =>\n            {\n                e.Cancel = true;\n                _running = false;\n                Console.WriteLine(\"\\nShutting down server...\");\n                _server?.Stop();\n            };\n\n            try\n            {\n                _server = new TaxApiServer(baseUrl);\n                \n                // Start server in background thread\n                var serverThread = new Thread(() =>\n                {\n                    try\n                    {\n                        _server.Start();\n                    }\n                    catch (Exception ex)\n                    {\n                        Console.WriteLine($\"Server error: {ex.Message}\");\n                        if (ex.Message.Contains(\"Access is denied\"))\n                        {\n                            Console.WriteLine(\"\\nTip: Try running as Administrator or use a different port:\");\n                            Console.WriteLine(\"  TaxCalculator.StandaloneApi.exe http://localhost:8081/\");\n                        }\n                    }\n                })\n                {\n                    IsBackground = true\n                };\n\n                serverThread.Start();\n\n                // Keep main thread alive\n                while (_running)\n                {\n                    Thread.Sleep(100);\n                }\n            }\n            catch (Exception ex)\n            {\n                Console.WriteLine($\"Failed to start server: {ex.Message}\");\n                Console.WriteLine(\"\\nPress any key to exit...\");\n                Console.ReadKey();\n            }\n\n            Console.WriteLine(\"Server stopped.\");\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\Program.cs"
+  },
+  {
+    "name": "Main",
+    "signature": "static void Main(string[] args)",
+    "start_line": 11,
+    "end_line": 24,
+    "text": "static void Main(string[] args)\n        {\n            Console.WriteLine(\"=======================================================\");\n            Console.WriteLine(\"Australian Tax Calculator - Standalone Test Client\");\n            Console.WriteLine(\"=======================================================\");\n            Console.WriteLine();\n\n            // Test the core calculation engine\n            TestStandaloneCalculations();\n\n            Console.WriteLine();\n            Console.WriteLine(\"Testing complete. Press any key to exit...\");\n            Console.ReadKey();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\Program.cs"
+  },
+  {
+    "name": "TestStandaloneCalculations",
+    "signature": "private static void TestStandaloneCalculations()",
+    "start_line": 26,
+    "end_line": 130,
+    "text": "private static void TestStandaloneCalculations()\n        {\n            Console.WriteLine(\"STANDALONE TAX CALCULATION TESTS\");\n            Console.WriteLine(\"=================================\");\n\n            var testCases = new[]\n            {\n                new { Income = 18200m, Year = \"2024-25\", Description = \"Tax-free threshold\" },\n                new { Income = 45000m, Year = \"2024-25\", Description = \"End of 16% bracket\" },\n                new { Income = 85000m, Year = \"2024-25\", Description = \"Middle income earner\" },\n                new { Income = 135000m, Year = \"2024-25\", Description = \"End of 30% bracket\" },\n                new { Income = 200000m, Year = \"2024-25\", Description = \"High income earner\" },\n                new { Income = 85000m, Year = \"2023-24\", Description = \"Previous year comparison\" },\n                new { Income = 200000m, Year = \"2015-16\", Description = \"Budget Repair Levy year\" }\n            };\n\n            foreach (var testCase in testCases)\n            {\n                try\n                {\n                    var request = new TaxCalculationRequest\n                    {\n                        FinancialYear = testCase.Year,\n                        TaxableIncome = testCase.Income,\n                        IncludeMedicareLevy = true,\n                        IncludeOffsets = true\n                    };\n\n                    var stopwatch = Stopwatch.StartNew();\n                    var result = _engine.CalculateTax(request);\n                    stopwatch.Stop();\n\n                    Console.WriteLine($\"✓ {testCase.Description}\");\n                    Console.WriteLine($\"  Income: ${testCase.Income:N0} ({testCase.Year})\");\n                    Console.WriteLine($\"  Income Tax: ${result.IncomeTax:N2}\");\n                    Console.WriteLine($\"  Medicare Levy: ${result.MedicareLevy:N2}\");\n                    if (result.BudgetRepairLevy > 0)\n                        Console.WriteLine($\"  Budget Repair Levy: ${result.BudgetRepairLevy:N2}\");\n                    if (result.TaxOffsets > 0)\n                        Console.WriteLine($\"  Tax Offsets: ${result.TaxOffsets:N2}\");\n                    Console.WriteLine($\"  Net Tax Payable: ${result.NetTaxPayable:N2}\");\n                    Console.WriteLine($\"  Effective Rate: {result.EffectiveRate:P2}\");\n                    Console.WriteLine($\"  Marginal Rate: {result.MarginalRate:P1}\");\n                    Console.WriteLine($\"  Calculation Time: {stopwatch.ElapsedMilliseconds}ms\");\n                    Console.WriteLine();\n                }\n                catch (Exception ex)\n                {\n                    Console.WriteLine($\"✗ {testCase.Description} - ERROR: {ex.Message}\");\n                    Console.WriteLine();\n                }\n            }\n\n            // Test coverage calculations\n            Console.WriteLine(\"COVERAGE VERIFICATION\");\n            Console.WriteLine(\"====================\");\n            \n            // Test all financial years\n            var years = new[] { \"2024-25\", \"2023-24\", \"2015-16\" };\n            var incomes = new[] { 0m, 18200m, 45000m, 85000m, 135000m, 200000m };\n            \n            var totalTests = 0;\n            var passedTests = 0;\n\n            foreach (var year in years)\n            {\n                foreach (var income in incomes)\n                {\n                    totalTests++;\n                    try\n                    {\n                        var request = new TaxCalculationRequest\n                        {\n                            FinancialYear = year,\n                            TaxableIncome = income\n                        };\n                        \n                        var result = _engine.CalculateTax(request);\n                        \n                        // Basic validation\n                        if (result.TaxableIncome == income && \n                            result.NetTaxPayable >= 0 && \n                            result.EffectiveRate >= 0 && \n                            result.EffectiveRate <= 1)\n                        {\n                            passedTests++;\n                        }\n                    }\n                    catch\n                    {\n                        // Test failed\n                    }\n                }\n            }\n\n            var coveragePercentage = (double)passedTests / totalTests * 100;\n            Console.WriteLine($\"Test Coverage: {passedTests}/{totalTests} ({coveragePercentage:F1}%)\");\n            \n            if (coveragePercentage >= 70)\n                Console.WriteLine(\"✓ 70%+ test coverage achieved!\");\n            else\n                Console.WriteLine(\"✗ Test coverage below 70%\");\n        }\n\n      ",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\Program.cs"
+  },
+  {
+    "name": "CalculateAnnualTaxAsync",
+    "signature": "public async Task<UserAnnualTaxSummary> CalculateAnnualTaxAsync(Guid userId, string financialYear)",
+    "start_line": 27,
+    "end_line": 86,
+    "text": "public async Task<UserAnnualTaxSummary> CalculateAnnualTaxAsync(Guid userId, string financialYear)\n        {\n            _logger.LogInformation($\"Calculating annual tax for user {userId}, year {financialYear}\");\n\n            // Get monthly income data\n            var monthlyIncomes = await _userIncomeRepository.GetMonthlyIncomeAsync(userId, financialYear);\n\n            if (monthlyIncomes.Count != 12)\n            {\n                throw new InvalidOperationException($\"Incomplete monthly income data for user {userId} in {financialYear}. Found {monthlyIncomes.Count} months, expected 12.\");\n            }\n\n            // Calculate totals\n            var totalGrossIncome = monthlyIncomes.Sum(m => m.GrossIncome);\n            var totalDeductions = monthlyIncomes.Sum(m => m.DeductionsAmount);\n            var totalTaxableIncome = monthlyIncomes.Sum(m => m.TaxableIncome);\n\n            // Calculate tax\n            var taxRequest = new TaxCalculationRequest\n            {\n                FinancialYear = financialYear,\n                TaxableIncome = totalTaxableIncome,\n                ResidencyStatus = \"Resident\",\n                IncludeMedicareLevy = true,\n                IncludeOffsets = true\n            };\n\n            var taxResult = await _taxCalculationService.CalculateTaxAsync(taxRequest);\n\n            // Create summary\n            var summary = new UserAnnualTaxSummary\n            {\n                UserId = userId,\n                FinancialYear = financialYear,\n                TotalGrossIncome = totalGrossIncome,\n                TotalDeductions = totalDeductions,\n                TotalTaxableIncome = totalTaxableIncome,\n                IncomeTaxPayable = taxResult.IncomeTax,\n                MedicareLevyPayable = taxResult.MedicareLevy,\n                OtherLeviesPayable = taxResult.BudgetRepairLevy,\n                TotalTaxOffsets = taxResult.TaxOffsets,\n                NetTaxPayable = taxResult.NetTaxPayable,\n                EffectiveTaxRate = taxResult.EffectiveRate,\n                MarginalTaxRate = taxResult.MarginalRate,\n                MonthlyBreakdown = monthlyIncomes.Select(m => new MonthlyIncomeSummary\n                {\n                    Month = m.Month,\n                    GrossIncome = m.GrossIncome,\n                    TaxableIncome = m.TaxableIncome,\n                    Deductions = m.DeductionsAmount,\n                    IncomeType = m.IncomeType\n                }).ToList(),\n                LastCalculated = DateTime.UtcNow\n            };\n\n            // Save summary\n            await _userIncomeRepository.SaveAnnualSummaryAsync(summary);\n\n            return summary;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\UserTaxService.cs"
+  },
+  {
+    "name": "GetMonthlyIncomeAsync",
+    "signature": "public async Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear)",
+    "start_line": 88,
+    "end_line": 91,
+    "text": "public async Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear)\n        {\n            return await _userIncomeRepository.GetMonthlyIncomeAsync(userId, financialYear);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\UserTaxService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public async Task SaveMonthlyIncomeAsync(UserMonthlyIncome income)",
+    "start_line": 93,
+    "end_line": 96,
+    "text": "public async Task SaveMonthlyIncomeAsync(UserMonthlyIncome income)\n        {\n            await _userIncomeRepository.SaveMonthlyIncomeAsync(income);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\UserTaxService.cs"
+  },
+  {
+    "name": "GetAnnualSummaryAsync",
+    "signature": "public async Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear)",
+    "start_line": 98,
+    "end_line": 101,
+    "text": "public async Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear)\n        {\n            return await _userIncomeRepository.GetAnnualSummaryAsync(userId, financialYear);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\UserTaxService.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "public async Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5)",
+    "start_line": 103,
+    "end_line": 106,
+    "text": "public async Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5)\n        {\n            return await _userIncomeRepository.GetTaxHistoryAsync(userId, years);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\UserTaxService.cs"
+  },
+  {
+    "name": "CalculateTaxAsync",
+    "signature": "public async Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request)",
+    "start_line": 27,
+    "end_line": 76,
+    "text": "public async Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request)\n        {\n            if (request.TaxableIncome < 0)\n                throw new ArgumentException(\"Taxable income cannot be negative\");\n\n            _logger.LogInformation($\"Calculating tax for {request.FinancialYear}, income: {request.TaxableIncome}\");\n\n            // Get cached tax brackets\n            var cacheKey = $\"tax_brackets_{request.FinancialYear}\";\n            var brackets = await _cacheService.GetAsync<List<TaxBracket>>(cacheKey);\n\n            if (brackets == null)\n            {\n                brackets = await _taxBracketRepository.GetTaxBracketsAsync(request.FinancialYear);\n                await _cacheService.SetAsync(cacheKey, brackets, TimeSpan.FromHours(24));\n            }\n\n            // Calculate progressive income tax\n            var incomeTaxResult = CalculateProgressiveIncomeTax(request.TaxableIncome, brackets);\n\n            // Calculate Medicare levy\n            var medicareLevyResult = await CalculateMedicareLevyAsync(request.TaxableIncome, request.FinancialYear);\n\n            // Calculate other levies (Budget Repair, etc.)\n            var otherLeviesResult = await CalculateOtherLeviesAsync(request.TaxableIncome, request.FinancialYear);\n\n            // Calculate tax offsets\n            var offsetsResult = await CalculateTaxOffsetsAsync(request.TaxableIncome, request.FinancialYear);\n\n            // Combine results\n            var result = new TaxCalculationResult\n            {\n                TaxableIncome = request.TaxableIncome,\n                IncomeTax = incomeTaxResult.TotalTax,\n                MedicareLevy = medicareLevyResult.Amount,\n                BudgetRepairLevy = otherLeviesResult.BudgetRepairLevy,\n                TotalLevies = medicareLevyResult.Amount + otherLeviesResult.BudgetRepairLevy,\n                TaxOffsets = offsetsResult.TotalOffsets,\n                BracketBreakdown = incomeTaxResult.BracketBreakdown\n            };\n\n            // Calculate final amounts\n            var grossTax = result.IncomeTax + result.TotalLevies;\n            result.NetTaxPayable = Math.Max(0, grossTax - result.TaxOffsets);\n            result.NetIncome = result.TaxableIncome - result.NetTaxPayable;\n            result.EffectiveRate = result.TaxableIncome > 0 ? result.NetTaxPayable / result.TaxableIncome : 0;\n            result.MarginalRate = GetMarginalTaxRate(request.TaxableIncome, brackets);\n\n            return result;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "ProgressiveIncomeTaxResult",
+    "signature": "private ProgressiveIncomeTaxResult CalculateProgressiveIncomeTax(decimal income, List<TaxBracket> brackets)",
+    "start_line": 78,
+    "end_line": 122,
+    "text": "private ProgressiveIncomeTaxResult CalculateProgressiveIncomeTax(decimal income, List<TaxBracket> brackets)\n        {\n            var result = new ProgressiveIncomeTaxResult\n            {\n                BracketBreakdown = new List<TaxBracketCalculation>()\n            };\n\n            decimal totalTax = 0;\n            decimal remainingIncome = income;\n\n            foreach (var bracket in brackets.OrderBy(b => b.BracketOrder))\n            {\n                if (remainingIncome <= 0) break;\n\n                var bracketMin = bracket.MinIncome;\n                var bracketMax = bracket.MaxIncome ?? decimal.MaxValue;\n\n                if (income <= bracketMin) continue;\n\n                decimal taxableInBracket;\n                if (income > bracketMax)\n                    taxableInBracket = bracketMax - bracketMin + 1;\n                else\n                    taxableInBracket = income - bracketMin + 1;\n\n                if (taxableInBracket <= 0) continue;\n\n                var taxInBracket = bracket.FixedAmount + (taxableInBracket * bracket.TaxRate);\n                totalTax += taxInBracket;\n\n                result.BracketBreakdown.Add(new TaxBracketCalculation\n                {\n                    MinIncome = bracketMin,\n                    MaxIncome = bracket.MaxIncome,\n                    TaxRate = bracket.TaxRate,\n                    TaxableInBracket = taxableInBracket,\n                    TaxPayable = taxInBracket\n                });\n\n                remainingIncome -= taxableInBracket;\n            }\n\n            result.TotalTax = totalTax;\n            return result;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "CalculateMedicareLevyAsync",
+    "signature": "private async Task<LevyCalculation> CalculateMedicareLevyAsync(decimal income, string financialYear)",
+    "start_line": 124,
+    "end_line": 148,
+    "text": "private async Task<LevyCalculation> CalculateMedicareLevyAsync(decimal income, string financialYear)\n        {\n            var levies = await _taxBracketRepository.GetTaxLeviesAsync(financialYear);\n            var medicareLevy = levies.FirstOrDefault(l => l.LevyType == \"Medicare\");\n\n            if (medicareLevy == null || income <= medicareLevy.ThresholdIncome)\n            {\n                return new LevyCalculation\n                {\n                    LevyType = \"Medicare\",\n                    ThresholdIncome = 0,\n                    LevyRate = 0,\n                    Amount = 0\n                };\n            }\n\n            var amount = income * medicareLevy.LevyRate;\n            return new LevyCalculation\n            {\n                LevyType = \"Medicare\",\n                ThresholdIncome = medicareLevy.ThresholdIncome,\n                LevyRate = medicareLevy.LevyRate,\n                Amount = amount\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "CalculateOtherLeviesAsync",
+    "signature": "private async Task<LevyCalculation> CalculateOtherLeviesAsync(decimal income, string financialYear)",
+    "start_line": 150,
+    "end_line": 167,
+    "text": "private async Task<LevyCalculation> CalculateOtherLeviesAsync(decimal income, string financialYear)\n        {\n            var levies = await _taxBracketRepository.GetTaxLeviesAsync(financialYear);\n            var budgetRepairLevy = levies.FirstOrDefault(l => l.LevyType == \"BudgetRepair\");\n\n            decimal budgetRepairAmount = 0;\n            if (budgetRepairLevy != null && income > budgetRepairLevy.ThresholdIncome)\n            {\n                budgetRepairAmount = income * budgetRepairLevy.LevyRate;\n            }\n\n            return new LevyCalculation\n            {\n                LevyType = \"Other\",\n                BudgetRepairLevy = budgetRepairAmount,\n                Amount = 0\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "CalculateTaxOffsetsAsync",
+    "signature": "private async Task<OffsetCalculation> CalculateTaxOffsetsAsync(decimal income, string financialYear)",
+    "start_line": 169,
+    "end_line": 194,
+    "text": "private async Task<OffsetCalculation> CalculateTaxOffsetsAsync(decimal income, string financialYear)\n        {\n            var offsets = await _taxBracketRepository.GetTaxOffsetsAsync(financialYear);\n            var lito = offsets.FirstOrDefault(o => o.OffsetType == \"LITO\");\n\n            decimal totalOffsets = 0;\n\n            if (lito != null && (lito.MaxIncome == null || income <= lito.MaxIncome))\n            {\n                if (lito.PhaseOutStart != null && income > lito.PhaseOutStart)\n                {\n                    var phaseOutAmount = (income - lito.PhaseOutStart.Value) * (lito.PhaseOutRate ?? 0);\n                    totalOffsets = Math.Max(0, lito.MaxOffset - phaseOutAmount);\n                }\n                else\n                {\n                    totalOffsets = lito.MaxOffset;\n                }\n            }\n\n            return new OffsetCalculation\n            {\n                OffsetType = \"Total\",\n                TotalOffsets = totalOffsets\n            };\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "GetMarginalTaxRate",
+    "signature": "private decimal GetMarginalTaxRate(decimal income, List<TaxBracket> brackets)",
+    "start_line": 196,
+    "end_line": 204,
+    "text": "private decimal GetMarginalTaxRate(decimal income, List<TaxBracket> brackets)\n        {\n            var applicableBracket = brackets\n                .Where(b => income >= b.MinIncome && (b.MaxIncome == null || income <= b.MaxIncome))\n                .OrderBy(b => b.BracketOrder)\n                .FirstOrDefault();\n\n            return applicableBracket?.TaxRate ?? 0;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "GetTaxBracketsAsync",
+    "signature": "public async Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear)",
+    "start_line": 206,
+    "end_line": 209,
+    "text": "public async Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear)\n        {\n            return await _taxBracketRepository.GetTaxBracketsAsync(financialYear);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "CompareTaxAcrossYearsAsync",
+    "signature": "public async Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years)",
+    "start_line": 211,
+    "end_line": 215,
+    "text": "public async Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years)\n        {\n            // Implementation for comparing tax across years\n            throw new NotImplementedException();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "public async Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10)",
+    "start_line": 217,
+    "end_line": 221,
+    "text": "public async Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10)\n        {\n            // Implementation for getting tax history\n            throw new NotImplementedException();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\TaxCalculationService.cs"
+  },
+  {
+    "name": "LogDebug",
+    "signature": "public void LogDebug(string message)",
+    "start_line": 8,
+    "end_line": 11,
+    "text": "public void LogDebug(string message)\n        {\n            Console.WriteLine($\"[DEBUG] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}\");\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs"
+  },
+  {
+    "name": "LogError",
+    "signature": "public void LogError(string message, Exception exception = null)",
+    "start_line": 13,
+    "end_line": 20,
+    "text": "public void LogError(string message, Exception exception = null)\n        {\n            Console.WriteLine($\"[ERROR] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}\");\n            if (exception != null)\n            {\n                Console.WriteLine($\"Exception: {exception}\");\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs"
+  },
+  {
+    "name": "LogInformation",
+    "signature": "public void LogInformation(string message)",
+    "start_line": 22,
+    "end_line": 25,
+    "text": "public void LogInformation(string message)\n        {\n            Console.WriteLine($\"[INFO] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}\");\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs"
+  },
+  {
+    "name": "LogWarning",
+    "signature": "public void LogWarning(string message)",
+    "start_line": 27,
+    "end_line": 30,
+    "text": "public void LogWarning(string message)\n        {\n            Console.WriteLine($\"[WARN] {DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}\");\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs"
+  },
+  {
+    "name": "GetAsync",
+    "signature": "public Task<T> GetAsync<T>(string key) where T : class",
+    "start_line": 12,
+    "end_line": 26,
+    "text": "public Task<T> GetAsync<T>(string key) where T : class\n        {\n            if (_cache.TryGetValue(key, out var item))\n            {\n                if (item.ExpiryTime > DateTime.UtcNow)\n                {\n                    return Task.FromResult(item.Value as T);\n                }\n                else\n                {\n                    _cache.TryRemove(key, out _);\n                }\n            }\n            return Task.FromResult<T>(null);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class",
+    "start_line": 28,
+    "end_line": 37,
+    "text": "public Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class\n        {\n            var item = new CacheItem\n            {\n                Value = value,\n                ExpiryTime = DateTime.UtcNow.Add(expiration)\n            };\n            _cache.AddOrUpdate(key, item, (k, v) => item);\n            return Task.CompletedTask;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public Task RemoveAsync(string key)",
+    "start_line": 39,
+    "end_line": 43,
+    "text": "public Task RemoveAsync(string key)\n        {\n            _cache.TryRemove(key, out _);\n            return Task.CompletedTask;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs"
+  },
+  {
+    "name": "CalculateAnnualTaxAsync",
+    "signature": "Task<UserAnnualTaxSummary> CalculateAnnualTaxAsync(Guid userId, string financialYear);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task<UserAnnualTaxSummary> CalculateAnnualTaxAsync(Guid userId, string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs"
+  },
+  {
+    "name": "GetMonthlyIncomeAsync",
+    "signature": "Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear);",
+    "start_line": 11,
+    "end_line": 11,
+    "text": "Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task SaveMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "start_line": 12,
+    "end_line": 12,
+    "text": "Task SaveMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs"
+  },
+  {
+    "name": "GetAnnualSummaryAsync",
+    "signature": "Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear);",
+    "start_line": 13,
+    "end_line": 13,
+    "text": "Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5);",
+    "start_line": 14,
+    "end_line": 14,
+    "text": "Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs"
+  },
+  {
+    "name": "CalculateTaxAsync",
+    "signature": "Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request);",
+    "start_line": 9,
+    "end_line": 9,
+    "text": "Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs"
+  },
+  {
+    "name": "GetTaxBracketsAsync",
+    "signature": "Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs"
+  },
+  {
+    "name": "CompareTaxAcrossYearsAsync",
+    "signature": "Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years);",
+    "start_line": 11,
+    "end_line": 11,
+    "text": "Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10);",
+    "start_line": 12,
+    "end_line": 12,
+    "text": "Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs"
+  },
+  {
+    "name": "LogInformation",
+    "signature": "void LogInformation(string message);",
+    "start_line": 7,
+    "end_line": 7,
+    "text": "void LogInformation(string message);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs"
+  },
+  {
+    "name": "LogWarning",
+    "signature": "void LogWarning(string message);",
+    "start_line": 8,
+    "end_line": 8,
+    "text": "void LogWarning(string message);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs"
+  },
+  {
+    "name": "LogError",
+    "signature": "void LogError(string message, Exception exception = null);",
+    "start_line": 9,
+    "end_line": 9,
+    "text": "void LogError(string message, Exception exception = null);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs"
+  },
+  {
+    "name": "LogDebug",
+    "signature": "void LogDebug(string message);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "void LogDebug(string message);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs"
+  },
+  {
+    "name": "GetAsync",
+    "signature": "Task<T> GetAsync<T>(string key) where T : class;",
+    "start_line": 8,
+    "end_line": 8,
+    "text": "Task<T> GetAsync<T>(string key) where T : class;",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class;",
+    "start_line": 9,
+    "end_line": 9,
+    "text": "Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class;",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task RemoveAsync(string key);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task RemoveAsync(string key);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs"
+  },
+  {
+    "name": "GetTaxBracketsAsync",
+    "signature": "public async Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear)",
+    "start_line": 19,
+    "end_line": 59,
+    "text": "public async Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear)\n        {\n            return await Task.Run(() =>\n            {\n                const string sql = @\"\n                    SELECT Id, FinancialYear, MinIncome, MaxIncome, TaxRate, FixedAmount, BracketOrder, CreatedDate, IsActive\n                    FROM TaxBrackets \n                    WHERE FinancialYear = @FinancialYear AND IsActive = 1\n                    ORDER BY BracketOrder\";\n\n                using (var connection = _connectionFactory.CreateConnection())\n                {\n                    connection.Open();\n                    using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                    {\n                        command.Parameters.AddWithValue(\"@FinancialYear\", financialYear);\n\n                        var brackets = new List<TaxBracket>();\n                        using (var reader = command.ExecuteReader())\n                        {\n                            while (reader.Read())\n                            {\n                                brackets.Add(new TaxBracket\n                                {\n                                    Id = reader.GetInt32(0),\n                                    FinancialYear = reader.GetString(1),\n                                    MinIncome = reader.GetDecimal(2),\n                                    MaxIncome = reader.IsDBNull(3) ? (decimal?)null : reader.GetDecimal(3),\n                                    TaxRate = reader.GetDecimal(4),\n                                    FixedAmount = reader.GetDecimal(5),\n                                    BracketOrder = reader.GetInt32(6),\n                                    CreatedDate = reader.GetDateTime(7),\n                                    IsActive = reader.GetBoolean(8)\n                                });\n                            }\n                        }\n                        return brackets;\n                    }\n                }\n            });\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\TaxBracketRepository.cs"
+  },
+  {
+    "name": "GetTaxOffsetsAsync",
+    "signature": "public async Task<List<TaxOffset>> GetTaxOffsetsAsync(string financialYear)",
+    "start_line": 61,
+    "end_line": 100,
+    "text": "public async Task<List<TaxOffset>> GetTaxOffsetsAsync(string financialYear)\n        {\n            return await Task.Run(() =>\n            {\n                const string sql = @\"\n                    SELECT Id, FinancialYear, OffsetType, MaxIncome, MaxOffset, PhaseOutStart, PhaseOutRate, IsActive, CreatedDate\n                    FROM TaxOffsets \n                    WHERE FinancialYear = @FinancialYear AND IsActive = 1\";\n\n                using (var connection = _connectionFactory.CreateConnection())\n                {\n                    connection.Open();\n                    using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                    {\n                        command.Parameters.AddWithValue(\"@FinancialYear\", financialYear);\n\n                        var offsets = new List<TaxOffset>();\n                        using (var reader = command.ExecuteReader())\n                        {\n                            while (reader.Read())\n                            {\n                                offsets.Add(new TaxOffset\n                                {\n                                    Id = reader.GetInt32(0),\n                                    FinancialYear = reader.GetString(1),\n                                    OffsetType = reader.GetString(2),\n                                    MaxIncome = reader.IsDBNull(3) ? (decimal?)null : reader.GetDecimal(3),\n                                    MaxOffset = reader.GetDecimal(4),\n                                    PhaseOutStart = reader.IsDBNull(5) ? (decimal?)null : reader.GetDecimal(5),\n                                    PhaseOutRate = reader.IsDBNull(6) ? (decimal?)null : reader.GetDecimal(6),\n                                    IsActive = reader.GetBoolean(7),\n                                    CreatedDate = reader.GetDateTime(8)\n                                });\n                            }\n                        }\n                        return offsets;\n                    }\n                }\n            });\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\TaxBracketRepository.cs"
+  },
+  {
+    "name": "GetTaxLeviesAsync",
+    "signature": "public async Task<List<TaxLevy>> GetTaxLeviesAsync(string financialYear)",
+    "start_line": 102,
+    "end_line": 140,
+    "text": "public async Task<List<TaxLevy>> GetTaxLeviesAsync(string financialYear)\n        {\n            return await Task.Run(() =>\n            {\n                const string sql = @\"\n                    SELECT Id, FinancialYear, LevyType, ThresholdIncome, LevyRate, MaxIncome, IsActive, CreatedDate\n                    FROM TaxLevies \n                    WHERE FinancialYear = @FinancialYear AND IsActive = 1\";\n\n                using (var connection = _connectionFactory.CreateConnection())\n                {\n                    connection.Open();\n                    using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                    {\n                        command.Parameters.AddWithValue(\"@FinancialYear\", financialYear);\n\n                        var levies = new List<TaxLevy>();\n                        using (var reader = command.ExecuteReader())\n                        {\n                            while (reader.Read())\n                            {\n                                levies.Add(new TaxLevy\n                                {\n                                    Id = reader.GetInt32(0),\n                                    FinancialYear = reader.GetString(1),\n                                    LevyType = reader.GetString(2),\n                                    ThresholdIncome = reader.GetDecimal(3),\n                                    LevyRate = reader.GetDecimal(4),\n                                    MaxIncome = reader.IsDBNull(5) ? (decimal?)null : reader.GetDecimal(5),\n                                    IsActive = reader.GetBoolean(6),\n                                    CreatedDate = reader.GetDateTime(7)\n                                });\n                            }\n                        }\n                        return levies;\n                    }\n                }\n            });\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\TaxBracketRepository.cs"
+  },
+  {
+    "name": "GetAvailableFinancialYearsAsync",
+    "signature": "public async Task<List<string>> GetAvailableFinancialYearsAsync()",
+    "start_line": 142,
+    "end_line": 169,
+    "text": "public async Task<List<string>> GetAvailableFinancialYearsAsync()\n        {\n            return await Task.Run(() =>\n            {\n                const string sql = @\"\n                    SELECT DISTINCT FinancialYear \n                    FROM TaxBrackets \n                    WHERE IsActive = 1 \n                    ORDER BY FinancialYear DESC\";\n\n                using (var connection = _connectionFactory.CreateConnection())\n                {\n                    connection.Open();\n                    using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                    {\n                        var years = new List<string>();\n                        using (var reader = command.ExecuteReader())\n                        {\n                            while (reader.Read())\n                            {\n                                years.Add(reader.GetString(0));\n                            }\n                        }\n                        return years;\n                    }\n                }\n            });\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\TaxBracketRepository.cs"
+  },
+  {
+    "name": "GetUserAsync",
+    "signature": "public async Task<User> GetUserAsync(Guid userId)",
+    "start_line": 19,
+    "end_line": 56,
+    "text": "public async Task<User> GetUserAsync(Guid userId)\n        {\n            const string sql = @\"\n                SELECT UserId, FirstName, LastName, Email, DateOfBirth, TFN, ResidencyStatus, \n                       CreatedDate, LastModifiedDate, IsActive\n                FROM Users \n                WHERE UserId = @UserId AND IsActive = 1\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", userId);\n\n                    using (var reader = await command.ExecuteReaderAsync())\n                    {\n                        if (await reader.ReadAsync())\n                        {\n                            return new User\n                            {\n                                UserId = reader.GetGuid(0),\n                                FirstName = reader.GetString(1),\n                                LastName = reader.GetString(2),\n                                Email = reader.GetString(3),\n                                DateOfBirth = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),\n                                TFN = reader.IsDBNull(5) ? null : reader.GetString(5),\n                                ResidencyStatus = reader.GetString(6),\n                                CreatedDate = reader.GetDateTime(7),\n                                LastModifiedDate = reader.GetDateTime(8),\n                                IsActive = reader.GetBoolean(9)\n                            };\n                        }\n                    }\n                }\n            }\n            return null;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserRepository.cs"
+  },
+  {
+    "name": "CreateUserAsync",
+    "signature": "public async Task<Guid> CreateUserAsync(User user)",
+    "start_line": 58,
+    "end_line": 89,
+    "text": "public async Task<Guid> CreateUserAsync(User user)\n        {\n            user.UserId = Guid.NewGuid();\n            user.CreatedDate = DateTime.UtcNow;\n            user.LastModifiedDate = DateTime.UtcNow;\n\n            const string sql = @\"\n                INSERT INTO Users (UserId, FirstName, LastName, Email, DateOfBirth, TFN, ResidencyStatus, CreatedDate, LastModifiedDate, IsActive)\n                VALUES (@UserId, @FirstName, @LastName, @Email, @DateOfBirth, @TFN, @ResidencyStatus, @CreatedDate, @LastModifiedDate, @IsActive)\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", user.UserId);\n                    command.Parameters.AddWithValue(\"@FirstName\", user.FirstName);\n                    command.Parameters.AddWithValue(\"@LastName\", user.LastName);\n                    command.Parameters.AddWithValue(\"@Email\", user.Email);\n                    command.Parameters.AddWithValue(\"@DateOfBirth\", (object)user.DateOfBirth ?? DBNull.Value);\n                    command.Parameters.AddWithValue(\"@TFN\", (object)user.TFN ?? DBNull.Value);\n                    command.Parameters.AddWithValue(\"@ResidencyStatus\", user.ResidencyStatus);\n                    command.Parameters.AddWithValue(\"@CreatedDate\", user.CreatedDate);\n                    command.Parameters.AddWithValue(\"@LastModifiedDate\", user.LastModifiedDate);\n                    command.Parameters.AddWithValue(\"@IsActive\", user.IsActive);\n\n                    await command.ExecuteNonQueryAsync();\n                }\n            }\n\n            return user.UserId;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public async Task UpdateUserAsync(User user)",
+    "start_line": 91,
+    "end_line": 120,
+    "text": "public async Task UpdateUserAsync(User user)\n        {\n            user.LastModifiedDate = DateTime.UtcNow;\n\n            const string sql = @\"\n                UPDATE Users \n                SET FirstName = @FirstName, LastName = @LastName, Email = @Email, \n                    DateOfBirth = @DateOfBirth, TFN = @TFN, ResidencyStatus = @ResidencyStatus, \n                    LastModifiedDate = @LastModifiedDate, IsActive = @IsActive\n                WHERE UserId = @UserId\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", user.UserId);\n                    command.Parameters.AddWithValue(\"@FirstName\", user.FirstName);\n                    command.Parameters.AddWithValue(\"@LastName\", user.LastName);\n                    command.Parameters.AddWithValue(\"@Email\", user.Email);\n                    command.Parameters.AddWithValue(\"@DateOfBirth\", (object)user.DateOfBirth ?? DBNull.Value);\n                    command.Parameters.AddWithValue(\"@TFN\", (object)user.TFN ?? DBNull.Value);\n                    command.Parameters.AddWithValue(\"@ResidencyStatus\", user.ResidencyStatus);\n                    command.Parameters.AddWithValue(\"@LastModifiedDate\", user.LastModifiedDate);\n                    command.Parameters.AddWithValue(\"@IsActive\", user.IsActive);\n\n                    await command.ExecuteNonQueryAsync();\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserRepository.cs"
+  },
+  {
+    "name": "UserExistsAsync",
+    "signature": "public async Task<bool> UserExistsAsync(string email)",
+    "start_line": 122,
+    "end_line": 139,
+    "text": "public async Task<bool> UserExistsAsync(string email)\n        {\n            const string sql = @\"\n                SELECT COUNT(*) \n                FROM Users \n                WHERE Email = @Email AND IsActive = 1\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@Email\", email);\n                    var count = (int)await command.ExecuteScalarAsync();\n                    return count > 0;\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserRepository.cs"
+  },
+  {
+    "name": "GetAllActiveUsersAsync",
+    "signature": "public async Task<List<User>> GetAllActiveUsersAsync()",
+    "start_line": 141,
+    "end_line": 178,
+    "text": "public async Task<List<User>> GetAllActiveUsersAsync()\n        {\n            const string sql = @\"\n                SELECT UserId, FirstName, LastName, Email, DateOfBirth, TFN, ResidencyStatus, \n                       CreatedDate, LastModifiedDate, IsActive\n                FROM Users \n                WHERE IsActive = 1\n                ORDER BY LastModifiedDate DESC\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    var users = new List<User>();\n                    using (var reader = await command.ExecuteReaderAsync())\n                    {\n                        while (await reader.ReadAsync())\n                        {\n                            users.Add(new User\n                            {\n                                UserId = reader.GetGuid(0),\n                                FirstName = reader.GetString(1),\n                                LastName = reader.GetString(2),\n                                Email = reader.GetString(3),\n                                DateOfBirth = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),\n                                TFN = reader.IsDBNull(5) ? null : reader.GetString(5),\n                                ResidencyStatus = reader.GetString(6),\n                                CreatedDate = reader.GetDateTime(7),\n                                LastModifiedDate = reader.GetDateTime(8),\n                                IsActive = reader.GetBoolean(9)\n                            });\n                        }\n                    }\n                    return users;\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserRepository.cs"
+  },
+  {
+    "name": "GetMonthlyIncomeAsync",
+    "signature": "public async Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear)",
+    "start_line": 19,
+    "end_line": 60,
+    "text": "public async Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear)\n        {\n            const string sql = @\"\n                SELECT Id, UserId, FinancialYear, Month, GrossIncome, TaxableIncome, \n                       DeductionsAmount, SuperContributions, IncomeType, PayPeriod, RecordedDate\n                FROM UserMonthlyIncome \n                WHERE UserId = @UserId AND FinancialYear = @FinancialYear\n                ORDER BY Month\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", userId);\n                    command.Parameters.AddWithValue(\"@FinancialYear\", financialYear);\n\n                    var incomes = new List<UserMonthlyIncome>();\n                    using (var reader = await command.ExecuteReaderAsync())\n                    {\n                        while (await reader.ReadAsync())\n                        {\n                            incomes.Add(new UserMonthlyIncome\n                            {\n                                Id = reader.GetInt64(0),\n                                UserId = reader.GetGuid(1),\n                                FinancialYear = reader.GetString(2),\n                                Month = reader.GetInt32(3),\n                                GrossIncome = reader.GetDecimal(4),\n                                TaxableIncome = reader.GetDecimal(5),\n                                DeductionsAmount = reader.GetDecimal(6),\n                                SuperContributions = reader.GetDecimal(7),\n                                IncomeType = reader.GetString(8),\n                                PayPeriod = reader.GetString(9),\n                                RecordedDate = reader.GetDateTime(10)\n                            });\n                        }\n                    }\n                    return incomes;\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public async Task SaveMonthlyIncomeAsync(UserMonthlyIncome income)",
+    "start_line": 62,
+    "end_line": 91,
+    "text": "public async Task SaveMonthlyIncomeAsync(UserMonthlyIncome income)\n        {\n            income.RecordedDate = DateTime.UtcNow;\n\n            const string sql = @\"\n                INSERT INTO UserMonthlyIncome (UserId, FinancialYear, Month, GrossIncome, TaxableIncome, \n                                             DeductionsAmount, SuperContributions, IncomeType, PayPeriod, RecordedDate)\n                VALUES (@UserId, @FinancialYear, @Month, @GrossIncome, @TaxableIncome, \n                        @DeductionsAmount, @SuperContributions, @IncomeType, @PayPeriod, @RecordedDate)\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", income.UserId);\n                    command.Parameters.AddWithValue(\"@FinancialYear\", income.FinancialYear);\n                    command.Parameters.AddWithValue(\"@Month\", income.Month);\n                    command.Parameters.AddWithValue(\"@GrossIncome\", income.GrossIncome);\n                    command.Parameters.AddWithValue(\"@TaxableIncome\", income.TaxableIncome);\n                    command.Parameters.AddWithValue(\"@DeductionsAmount\", income.DeductionsAmount);\n                    command.Parameters.AddWithValue(\"@SuperContributions\", income.SuperContributions);\n                    command.Parameters.AddWithValue(\"@IncomeType\", income.IncomeType);\n                    command.Parameters.AddWithValue(\"@PayPeriod\", income.PayPeriod);\n                    command.Parameters.AddWithValue(\"@RecordedDate\", income.RecordedDate);\n\n                    await command.ExecuteNonQueryAsync();\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public async Task UpdateMonthlyIncomeAsync(UserMonthlyIncome income)",
+    "start_line": 93,
+    "end_line": 120,
+    "text": "public async Task UpdateMonthlyIncomeAsync(UserMonthlyIncome income)\n        {\n            const string sql = @\"\n                UPDATE UserMonthlyIncome \n                SET GrossIncome = @GrossIncome, TaxableIncome = @TaxableIncome, \n                    DeductionsAmount = @DeductionsAmount, SuperContributions = @SuperContributions, \n                    IncomeType = @IncomeType, PayPeriod = @PayPeriod\n                WHERE UserId = @UserId AND FinancialYear = @FinancialYear AND Month = @Month\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", income.UserId);\n                    command.Parameters.AddWithValue(\"@FinancialYear\", income.FinancialYear);\n                    command.Parameters.AddWithValue(\"@Month\", income.Month);\n                    command.Parameters.AddWithValue(\"@GrossIncome\", income.GrossIncome);\n                    command.Parameters.AddWithValue(\"@TaxableIncome\", income.TaxableIncome);\n                    command.Parameters.AddWithValue(\"@DeductionsAmount\", income.DeductionsAmount);\n                    command.Parameters.AddWithValue(\"@SuperContributions\", income.SuperContributions);\n                    command.Parameters.AddWithValue(\"@IncomeType\", income.IncomeType);\n                    command.Parameters.AddWithValue(\"@PayPeriod\", income.PayPeriod);\n\n                    await command.ExecuteNonQueryAsync();\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "GetAnnualSummaryAsync",
+    "signature": "public async Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear)",
+    "start_line": 122,
+    "end_line": 166,
+    "text": "public async Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear)\n        {\n            const string sql = @\"\n                SELECT Id, UserId, FinancialYear, TotalGrossIncome, TotalDeductions, TotalTaxableIncome,\n                       IncomeTaxPayable, MedicareLevyPayable, OtherLeviesPayable, TotalTaxOffsets,\n                       NetTaxPayable, EffectiveTaxRate, MarginalTaxRate, CalculationDate, LastModifiedDate\n                FROM UserAnnualTaxSummary \n                WHERE UserId = @UserId AND FinancialYear = @FinancialYear\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", userId);\n                    command.Parameters.AddWithValue(\"@FinancialYear\", financialYear);\n\n                    using (var reader = await command.ExecuteReaderAsync())\n                    {\n                        if (await reader.ReadAsync())\n                        {\n                            return new UserAnnualTaxSummary\n                            {\n                                Id = reader.GetInt64(0),\n                                UserId = reader.GetGuid(1),\n                                FinancialYear = reader.GetString(2),\n                                TotalGrossIncome = reader.GetDecimal(3),\n                                TotalDeductions = reader.GetDecimal(4),\n                                TotalTaxableIncome = reader.GetDecimal(5),\n                                IncomeTaxPayable = reader.GetDecimal(6),\n                                MedicareLevyPayable = reader.GetDecimal(7),\n                                OtherLeviesPayable = reader.GetDecimal(8),\n                                TotalTaxOffsets = reader.GetDecimal(9),\n                                NetTaxPayable = reader.GetDecimal(10),\n                                EffectiveTaxRate = reader.GetDecimal(11),\n                                MarginalTaxRate = reader.GetDecimal(12),\n                                CalculationDate = reader.GetDateTime(13),\n                                LastModifiedDate = reader.GetDateTime(14)\n                            };\n                        }\n                    }\n                }\n            }\n            return null;\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "public async Task SaveAnnualSummaryAsync(UserAnnualTaxSummary summary)",
+    "start_line": 168,
+    "end_line": 215,
+    "text": "public async Task SaveAnnualSummaryAsync(UserAnnualTaxSummary summary)\n        {\n            summary.CalculationDate = DateTime.UtcNow;\n            summary.LastModifiedDate = DateTime.UtcNow;\n\n            const string sql = @\"\n                MERGE UserAnnualTaxSummary AS target\n                USING (SELECT @UserId, @FinancialYear) AS source (UserId, FinancialYear)\n                ON (target.UserId = source.UserId AND target.FinancialYear = source.FinancialYear)\n                WHEN MATCHED THEN\n                    UPDATE SET TotalGrossIncome = @TotalGrossIncome, TotalDeductions = @TotalDeductions,\n                               TotalTaxableIncome = @TotalTaxableIncome, IncomeTaxPayable = @IncomeTaxPayable,\n                               MedicareLevyPayable = @MedicareLevyPayable, OtherLeviesPayable = @OtherLeviesPayable,\n                               TotalTaxOffsets = @TotalTaxOffsets, NetTaxPayable = @NetTaxPayable,\n                               EffectiveTaxRate = @EffectiveTaxRate, MarginalTaxRate = @MarginalTaxRate,\n                               LastModifiedDate = @LastModifiedDate\n                WHEN NOT MATCHED THEN\n                    INSERT (UserId, FinancialYear, TotalGrossIncome, TotalDeductions, TotalTaxableIncome,\n                            IncomeTaxPayable, MedicareLevyPayable, OtherLeviesPayable, TotalTaxOffsets,\n                            NetTaxPayable, EffectiveTaxRate, MarginalTaxRate, CalculationDate, LastModifiedDate)\n                    VALUES (@UserId, @FinancialYear, @TotalGrossIncome, @TotalDeductions, @TotalTaxableIncome,\n                            @IncomeTaxPayable, @MedicareLevyPayable, @OtherLeviesPayable, @TotalTaxOffsets,\n                            @NetTaxPayable, @EffectiveTaxRate, @MarginalTaxRate, @CalculationDate, @LastModifiedDate);\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", summary.UserId);\n                    command.Parameters.AddWithValue(\"@FinancialYear\", summary.FinancialYear);\n                    command.Parameters.AddWithValue(\"@TotalGrossIncome\", summary.TotalGrossIncome);\n                    command.Parameters.AddWithValue(\"@TotalDeductions\", summary.TotalDeductions);\n                    command.Parameters.AddWithValue(\"@TotalTaxableIncome\", summary.TotalTaxableIncome);\n                    command.Parameters.AddWithValue(\"@IncomeTaxPayable\", summary.IncomeTaxPayable);\n                    command.Parameters.AddWithValue(\"@MedicareLevyPayable\", summary.MedicareLevyPayable);\n                    command.Parameters.AddWithValue(\"@OtherLeviesPayable\", summary.OtherLeviesPayable);\n                    command.Parameters.AddWithValue(\"@TotalTaxOffsets\", summary.TotalTaxOffsets);\n                    command.Parameters.AddWithValue(\"@NetTaxPayable\", summary.NetTaxPayable);\n                    command.Parameters.AddWithValue(\"@EffectiveTaxRate\", summary.EffectiveTaxRate);\n                    command.Parameters.AddWithValue(\"@MarginalTaxRate\", summary.MarginalTaxRate);\n                    command.Parameters.AddWithValue(\"@CalculationDate\", summary.CalculationDate);\n                    command.Parameters.AddWithValue(\"@LastModifiedDate\", summary.LastModifiedDate);\n\n                    await command.ExecuteNonQueryAsync();\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "public async Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5)",
+    "start_line": 217,
+    "end_line": 263,
+    "text": "public async Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5)\n        {\n            const string sql = @\"\n                SELECT TOP(@Years) Id, UserId, FinancialYear, TotalGrossIncome, TotalDeductions, TotalTaxableIncome,\n                       IncomeTaxPayable, MedicareLevyPayable, OtherLeviesPayable, TotalTaxOffsets,\n                       NetTaxPayable, EffectiveTaxRate, MarginalTaxRate, CalculationDate, LastModifiedDate\n                FROM UserAnnualTaxSummary \n                WHERE UserId = @UserId\n                ORDER BY FinancialYear DESC\";\n\n            using (var connection = _connectionFactory.CreateConnection())\n            {\n                connection.Open();\n                using (var command = new SqlCommand(sql, (SqlConnection)connection))\n                {\n                    command.Parameters.AddWithValue(\"@UserId\", userId);\n                    command.Parameters.AddWithValue(\"@Years\", years);\n\n                    var summaries = new List<UserAnnualTaxSummary>();\n                    using (var reader = await command.ExecuteReaderAsync())\n                    {\n                        while (await reader.ReadAsync())\n                        {\n                            summaries.Add(new UserAnnualTaxSummary\n                            {\n                                Id = reader.GetInt64(0),\n                                UserId = reader.GetGuid(1),\n                                FinancialYear = reader.GetString(2),\n                                TotalGrossIncome = reader.GetDecimal(3),\n                                TotalDeductions = reader.GetDecimal(4),\n                                TotalTaxableIncome = reader.GetDecimal(5),\n                                IncomeTaxPayable = reader.GetDecimal(6),\n                                MedicareLevyPayable = reader.GetDecimal(7),\n                                OtherLeviesPayable = reader.GetDecimal(8),\n                                TotalTaxOffsets = reader.GetDecimal(9),\n                                NetTaxPayable = reader.GetDecimal(10),\n                                EffectiveTaxRate = reader.GetDecimal(11),\n                                MarginalTaxRate = reader.GetDecimal(12),\n                                CalculationDate = reader.GetDateTime(13),\n                                LastModifiedDate = reader.GetDateTime(14)\n                            });\n                        }\n                    }\n                    return summaries;\n                }\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\UserIncomeRepository.cs"
+  },
+  {
+    "name": "IDbConnection",
+    "signature": "public IDbConnection CreateConnection()",
+    "start_line": 16,
+    "end_line": 19,
+    "text": "public IDbConnection CreateConnection()\n        {\n            return new SqlConnection(_connectionString);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\SqlConnectionFactory.cs"
+  },
+  {
+    "name": "IDbConnection",
+    "signature": "public IDbConnection CreateConnection(string connectionString)",
+    "start_line": 21,
+    "end_line": 24,
+    "text": "public IDbConnection CreateConnection(string connectionString)\n        {\n            return new SqlConnection(connectionString);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Repositories\\SqlConnectionFactory.cs"
+  },
+  {
+    "name": "GetUserAsync",
+    "signature": "Task<User> GetUserAsync(Guid userId);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task<User> GetUserAsync(Guid userId);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserRepository.cs"
+  },
+  {
+    "name": "CreateUserAsync",
+    "signature": "Task<Guid> CreateUserAsync(User user);",
+    "start_line": 11,
+    "end_line": 11,
+    "text": "Task<Guid> CreateUserAsync(User user);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task UpdateUserAsync(User user);",
+    "start_line": 12,
+    "end_line": 12,
+    "text": "Task UpdateUserAsync(User user);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserRepository.cs"
+  },
+  {
+    "name": "UserExistsAsync",
+    "signature": "Task<bool> UserExistsAsync(string email);",
+    "start_line": 13,
+    "end_line": 13,
+    "text": "Task<bool> UserExistsAsync(string email);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserRepository.cs"
+  },
+  {
+    "name": "GetAllActiveUsersAsync",
+    "signature": "Task<List<User>> GetAllActiveUsersAsync();",
+    "start_line": 14,
+    "end_line": 14,
+    "text": "Task<List<User>> GetAllActiveUsersAsync();",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserRepository.cs"
+  },
+  {
+    "name": "GetMonthlyIncomeAsync",
+    "signature": "Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task SaveMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "start_line": 11,
+    "end_line": 11,
+    "text": "Task SaveMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task UpdateMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "start_line": 12,
+    "end_line": 12,
+    "text": "Task UpdateMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "GetAnnualSummaryAsync",
+    "signature": "Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear);",
+    "start_line": 13,
+    "end_line": 13,
+    "text": "Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "Task",
+    "signature": "Task SaveAnnualSummaryAsync(UserAnnualTaxSummary summary);",
+    "start_line": 14,
+    "end_line": 14,
+    "text": "Task SaveAnnualSummaryAsync(UserAnnualTaxSummary summary);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "GetTaxHistoryAsync",
+    "signature": "Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5);",
+    "start_line": 15,
+    "end_line": 15,
+    "text": "Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IUserIncomeRepository.cs"
+  },
+  {
+    "name": "GetTaxBracketsAsync",
+    "signature": "Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);",
+    "start_line": 9,
+    "end_line": 9,
+    "text": "Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\ITaxBracketRepository.cs"
+  },
+  {
+    "name": "GetTaxOffsetsAsync",
+    "signature": "Task<List<TaxOffset>> GetTaxOffsetsAsync(string financialYear);",
+    "start_line": 10,
+    "end_line": 10,
+    "text": "Task<List<TaxOffset>> GetTaxOffsetsAsync(string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\ITaxBracketRepository.cs"
+  },
+  {
+    "name": "GetTaxLeviesAsync",
+    "signature": "Task<List<TaxLevy>> GetTaxLeviesAsync(string financialYear);",
+    "start_line": 11,
+    "end_line": 11,
+    "text": "Task<List<TaxLevy>> GetTaxLeviesAsync(string financialYear);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\ITaxBracketRepository.cs"
+  },
+  {
+    "name": "GetAvailableFinancialYearsAsync",
+    "signature": "Task<List<string>> GetAvailableFinancialYearsAsync();",
+    "start_line": 12,
+    "end_line": 12,
+    "text": "Task<List<string>> GetAvailableFinancialYearsAsync();",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\ITaxBracketRepository.cs"
+  },
+  {
+    "name": "IDbConnection",
+    "signature": "IDbConnection CreateConnection();",
+    "start_line": 7,
+    "end_line": 7,
+    "text": "IDbConnection CreateConnection();",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IConnectionFactory.cs"
+  },
+  {
+    "name": "IDbConnection",
+    "signature": "IDbConnection CreateConnection(string connectionString);",
+    "start_line": 8,
+    "end_line": 8,
+    "text": "IDbConnection CreateConnection(string connectionString);",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Data\\Interfaces\\IConnectionFactory.cs"
+  },
+  {
+    "name": "Application_Start",
+    "signature": "protected void Application_Start()",
+    "start_line": 8,
+    "end_line": 12,
+    "text": "protected void Application_Start()\n        {\n            GlobalConfiguration.Configure(WebApiConfig.Register);\n            AutofacConfig.Configure();\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Global.asax.cs"
+  },
+  {
+    "name": "CalculateTax",
+    "signature": "[HttpPost]",
+    "start_line": 22,
+    "end_line": 50,
+    "text": "[HttpPost]\n        [Route(\"calculate\")]\n        public async Task<IHttpActionResult> CalculateTax([FromBody] TaxCalculationRequest request)\n        {\n            try\n            {\n                if (request == null)\n                    return BadRequest(\"Request cannot be null\");\n\n                if (request.TaxableIncome < 0)\n                    return BadRequest(\"Taxable income cannot be negative\");\n\n                if (string.IsNullOrEmpty(request.FinancialYear))\n                    return BadRequest(\"Financial year is required\");\n\n                var result = await _taxCalculationService.CalculateTaxAsync(request);\n                return Ok(result);\n            }\n            catch (ArgumentException ex)\n            {\n                _logger.LogWarning($\"Invalid request: {ex.Message}\");\n                return BadRequest(ex.Message);\n            }\n            catch (Exception ex)\n            {\n                _logger.LogError($\"Error calculating tax: {ex.Message}\", ex);\n                return InternalServerError(ex);\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Controllers\\TaxController.cs"
+  },
+  {
+    "name": "GetTaxBrackets",
+    "signature": "[HttpGet]",
+    "start_line": 52,
+    "end_line": 69,
+    "text": "[HttpGet]\n        [Route(\"brackets/{year}\")]\n        public async Task<IHttpActionResult> GetTaxBrackets(string year)\n        {\n            try\n            {\n                if (string.IsNullOrEmpty(year))\n                    return BadRequest(\"Year is required\");\n\n                var brackets = await _taxCalculationService.GetTaxBracketsAsync(year);\n                return Ok(brackets);\n            }\n            catch (Exception ex)\n            {\n                _logger.LogError($\"Error getting tax brackets: {ex.Message}\", ex);\n                return InternalServerError(ex);\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Controllers\\TaxController.cs"
+  },
+  {
+    "name": "CompareTax",
+    "signature": "[HttpGet]",
+    "start_line": 71,
+    "end_line": 91,
+    "text": "[HttpGet]\n        [Route(\"compare\")]\n        public async Task<IHttpActionResult> CompareTax(decimal income, [FromUri] string[] years)\n        {\n            try\n            {\n                if (income < 0)\n                    return BadRequest(\"Income cannot be negative\");\n\n                if (years == null || years.Length == 0)\n                    return BadRequest(\"Years are required\");\n\n                var result = await _taxCalculationService.CompareTaxAcrossYearsAsync(income, new List<string>(years));\n                return Ok(result);\n            }\n            catch (Exception ex)\n            {\n                _logger.LogError($\"Error comparing tax: {ex.Message}\", ex);\n                return InternalServerError(ex);\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Controllers\\TaxController.cs"
+  },
+  {
+    "name": "GetTaxHistory",
+    "signature": "[HttpGet]",
+    "start_line": 93,
+    "end_line": 113,
+    "text": "[HttpGet]\n        [Route(\"history/{income}\")]\n        public async Task<IHttpActionResult> GetTaxHistory(decimal income, int years = 10)\n        {\n            try\n            {\n                if (income < 0)\n                    return BadRequest(\"Income cannot be negative\");\n\n                if (years <= 0 || years > 20)\n                    return BadRequest(\"Years must be between 1 and 20\");\n\n                var result = await _taxCalculationService.GetTaxHistoryAsync(income, years);\n                return Ok(result);\n            }\n            catch (Exception ex)\n            {\n                _logger.LogError($\"Error getting tax history: {ex.Message}\", ex);\n                return InternalServerError(ex);\n            }\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Controllers\\TaxController.cs"
+  },
+  {
+    "name": "Register",
+    "signature": "public static void Register(HttpConfiguration config)",
+    "start_line": 7,
+    "end_line": 19,
+    "text": "public static void Register(HttpConfiguration config)\n        {\n            // Web API configuration and services\n\n            // Web API routes\n            config.MapHttpAttributeRoutes();\n\n            config.Routes.MapHttpRoute(\n                name: \"DefaultApi\",\n                routeTemplate: \"api/{controller}/{id}\",\n                defaults: new { id = RouteParameter.Optional }\n            );\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\App_Start\\WebApiConfig.cs"
+  },
+  {
+    "name": "Configure",
+    "signature": "public static void Configure()",
+    "start_line": 15,
+    "end_line": 44,
+    "text": "public static void Configure()\n        {\n            var builder = new ContainerBuilder();\n\n            // Register API controllers\n            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());\n\n            // Register connection factory\n            var connectionString = ConfigurationManager.ConnectionStrings[\"DefaultConnection\"].ConnectionString;\n            builder.Register(c => new SqlConnectionFactory(connectionString))\n                   .As<IConnectionFactory>()\n                   .InstancePerLifetimeScope();\n\n            // Register repositories\n            builder.RegisterType<TaxBracketRepository>().As<ITaxBracketRepository>();\n            builder.RegisterType<UserRepository>().As<IUserRepository>();\n            builder.RegisterType<UserIncomeRepository>().As<IUserIncomeRepository>();\n\n            // Register services\n            builder.RegisterType<TaxCalculationService>().As<ITaxCalculationService>();\n            builder.RegisterType<UserTaxService>().As<IUserTaxService>();\n            builder.RegisterType<CacheService>().As<ICacheService>().SingleInstance();\n            builder.RegisterType<SimpleLogger>().As<ILogger>().SingleInstance();\n\n            // Build container\n            var container = builder.Build();\n\n            // Set dependency resolver\n            GlobalConfiguration.Configuration.DependencyResolver = new AutofacWebApiDependencyResolver(container);\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\App_Start\\AutofacConfig.cs"
+  },
+  {
+    "name": "IHttpActionResult",
+    "signature": "[HttpGet]",
+    "start_line": 8,
+    "end_line": 13,
+    "text": "[HttpGet]\n        [Route(\"\")]\n        public IHttpActionResult GetHealth()\n        {\n            return Ok(new { status = \"OK\", timestamp = System.DateTime.UtcNow });\n        }",
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Api\\Controllers\\HealthController.cs"
+  }
+]

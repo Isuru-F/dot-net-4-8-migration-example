@@ -1,0 +1,186 @@
+[
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "Main",
+    "signature": "static void Main()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "TestHealthEndpoint",
+    "signature": "static void TestHealthEndpoint()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "TestTaxCalculationEndpoint",
+    "signature": "static void TestTaxCalculationEndpoint()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "TestTaxBracketsEndpoint",
+    "signature": "static void TestTaxBracketsEndpoint()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "MakeHttpRequest",
+    "signature": "static HttpResponse MakeHttpRequest(string method, string url, string body)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\ApiTestClient.cs",
+    "method_name": "ExtractJsonValue",
+    "signature": "static string ExtractJsonValue(string json, string key)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Console\\Program.cs",
+    "method_name": "Main",
+    "signature": "static void Main(string[] args)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Console\\Program.cs",
+    "method_name": "ExecuteSqlScript",
+    "signature": "static void ExecuteSqlScript(string connectionString, string scriptPath)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "Setup",
+    "signature": "[SetUp] public void Setup()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_ValidKeyValue_StoresSuccessfully",
+    "signature": "[Test] public async Task SetAsync_ValidKeyValue_StoresSuccessfully()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_NonExistentKey_ReturnsNull",
+    "signature": "[Test] public async Task GetAsync_NonExistentKey_ReturnsNull()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_ExpiredItem_ReturnsNull",
+    "signature": "[Test] public async Task GetAsync_ExpiredItem_ReturnsNull()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_ValidItem_ReturnsCorrectValue",
+    "signature": "[Test] public async Task GetAsync_ValidItem_ReturnsCorrectValue()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_OverwriteExistingKey_UpdatesValue",
+    "signature": "[Test] public async Task SetAsync_OverwriteExistingKey_UpdatesValue()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "RemoveAsync_ExistingKey_RemovesItem",
+    "signature": "[Test] public async Task RemoveAsync_ExistingKey_RemovesItem()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "RemoveAsync_NonExistentKey_DoesNotThrow",
+    "signature": "[Test] public async Task RemoveAsync_NonExistentKey_DoesNotThrow()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_ComplexObject_StoresAndRetrievesCorrectly",
+    "signature": "[Test] public async Task SetAsync_ComplexObject_StoresAndRetrievesCorrectly()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_WrongType_ReturnsNull",
+    "signature": "[Test] public async Task GetAsync_WrongType_ReturnsNull()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_NullValue_StoresNull",
+    "signature": "[Test] public async Task SetAsync_NullValue_StoresNull()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_ZeroExpiration_ItemExpiresImmediately",
+    "signature": "[Test] public async Task SetAsync_ZeroExpiration_ItemExpiresImmediately()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "SetAsync_LongExpiration_ItemPersists",
+    "signature": "[Test] public async Task SetAsync_LongExpiration_ItemPersists()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "CacheService_ConcurrentAccess_HandlesCorrectly",
+    "signature": "[Test] public async Task CacheService_ConcurrentAccess_HandlesCorrectly()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_AfterPartialExpiration_OnlyReturnsValidItems",
+    "signature": "[Test] public async Task GetAsync_AfterPartialExpiration_OnlyReturnsValidItems()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "Setup",
+    "signature": "[SetUp] public void Setup()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_2024_25_Income85000_ReturnsCorrectTax",
+    "signature": "[Test] public async Task CalculateTaxAsync_2024_25_Income85000_ReturnsCorrectTax()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the tax calculation for a specific income ($85,000) in the 2024-25 financial year",
+    "how_it_works": "Sets up test data including tax brackets for 2024-25, medicare levy (2%), and LITO offset ($700 max, phase-out at $37,500). Mocks repository calls and verifies the calculated tax components: income tax, medicare levy ($1,700), and effective tax rate (20-25% range). This validates the core tax calculation logic against known Australian tax rules."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_NegativeIncome_ThrowsArgumentException",
+    "signature": "[Test] public async Task CalculateTaxAsync_NegativeIncome_ThrowsArgumentException()",
+    "classification": "business_logic",
+    "what_it_does": "Tests that the tax calculation service properly validates negative income values",
+    "how_it_works": "Attempts to calculate tax with a negative income (-$1,000) and verifies that an ArgumentException is thrown with appropriate error message. This validates input validation rules that prevent invalid tax calculations."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_2024_25_VariousIncomes_ReturnsExpectedTax",
+    "signature": "[TestCase(18200, 0)] [TestCase(45000, 4288)] [TestCase(85000, 19238)] [TestCase(135000, 31288)] [TestCase(190000, 51638)] public async Task CalculateTaxAsync_2024_25_VariousIncomes_ReturnsExpectedTax(decimal income, decimal expectedTax)",
+    "classification": "business_logic",
+    "what_it_does": "Tests tax calculations across multiple income levels to verify progressive tax bracket calculations",
+    "how_it_works": "Uses test cases covering key income thresholds: $18,200 (tax-free threshold), $45,000 (end of second bracket), $85,000 (third bracket), $135,000 (end of third bracket), and $190,000 (end of fourth bracket). Each test case validates that the calculated income tax matches expected amounts, ensuring the progressive tax calculation correctly applies different rates at each bracket boundary."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_WithMedicareLevy_CalculatesCorrectly",
+    "signature": "[Test] public async Task CalculateTaxAsync_WithMedicareLevy_CalculatesCorrectly()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the Medicare Levy calculation component of the tax system",
+    "how_it_works": "Calculates tax for $100,000 income with Medicare Levy enabled. Sets up a 2% Medicare Levy rate and verifies the calculated Medicare Levy equals $2,000 (2% of $100,000). This validates the Medicare Levy calculation logic which is a separate component from income tax in the Australian tax system."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_WithLITO_AppliesOffsetCorrectly",
+    "signature": "[Test] public async Task CalculateTaxAsync_WithLITO_AppliesOffsetCorrectly()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the Low Income Tax Offset (LITO) calculation and application",
+    "how_it_works": "Tests with $30,000 income (below the $37,500 phase-out threshold) and verifies the full $700 LITO offset is applied. The LITO reduces tax payable for low-income earners, with a maximum offset of $700 that phases out at higher incomes. This validates the tax offset calculation logic which reduces the final tax payable amount."
+  }
+]
