@@ -1,0 +1,424 @@
+[
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\CacheServiceTests.cs",
+    "method_name": "GetAsync_AfterPartialExpiration_OnlyReturnsValidItems",
+    "signature": "[Test] public async Task GetAsync_AfterPartialExpiration_OnlyReturnsValidItems()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "Setup",
+    "signature": "[SetUp] public void Setup()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_2024_25_Income85000_ReturnsCorrectTax",
+    "signature": "[Test] public async Task CalculateTaxAsync_2024_25_Income85000_ReturnsCorrectTax()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the main tax calculation functionality for a typical middle income ($85,000) in the 2024-25 financial year",
+    "how_it_works": "Creates a realistic tax calculation request with income $85,000, sets up mock tax brackets for 2024-25, medicare levy (2%), and LITO offset (up to $700). Verifies that the calculation returns correct income tax, medicare levy ($1,700 = 2% of $85,000), and an effective tax rate between 20-25%. This validates the core progressive tax calculation engine against real Australian tax rules."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_NegativeIncome_ThrowsArgumentException",
+    "signature": "[Test] public async Task CalculateTaxAsync_NegativeIncome_ThrowsArgumentException()",
+    "classification": "business_logic",
+    "what_it_does": "Tests business rule validation that prevents negative taxable income from being processed",
+    "how_it_works": "Attempts to calculate tax with -$1,000 income and verifies that an ArgumentException is thrown with message containing 'cannot be negative'. This enforces the business rule that taxable income must be non-negative as per Australian tax law."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_2024_25_VariousIncomes_ReturnsExpectedTax",
+    "signature": "[TestCase] public async Task CalculateTaxAsync_2024_25_VariousIncomes_ReturnsExpectedTax(decimal income, decimal expectedTax)",
+    "classification": "business_logic",
+    "what_it_does": "Tests progressive tax bracket calculations across multiple income levels for 2024-25 financial year",
+    "how_it_works": "Uses parameterized test cases to verify tax calculations at bracket boundaries: $18,200 (tax-free threshold = $0 tax), $45,000 (end of 16% bracket = $4,288), $85,000 (30% bracket = $19,238), $135,000 (end of 30% bracket = $31,288), $190,000 (end of 37% bracket = $51,638). Each test verifies the progressive tax formula where higher income portions are taxed at higher rates, ensuring the tax brackets are correctly implemented."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_WithMedicareLevy_CalculatesCorrectly",
+    "signature": "[Test] public async Task CalculateTaxAsync_WithMedicareLevy_CalculatesCorrectly()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the medicare levy calculation which is a mandatory 2% levy on taxable income",
+    "how_it_works": "Calculates tax for $100,000 income with medicare levy enabled. Sets up a 2% medicare levy with no threshold income. Verifies that medicare levy equals $2,000 (2% of $100,000) and that total levies equals the medicare levy amount. This validates the medicare levy business rule implementation."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "CalculateTaxAsync_WithLITO_AppliesOffsetCorrectly",
+    "signature": "[Test] public async Task CalculateTaxAsync_WithLITO_AppliesOffsetCorrectly()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the Low Income Tax Offset (LITO) calculation which reduces tax liability for low-income earners",
+    "how_it_works": "Calculates tax for $30,000 income with LITO enabled. Sets up LITO with maximum offset of $700, phase-out starting at $37,500 with 5% phase-out rate. Since $30,000 is below the phase-out threshold, verifies that the full $700 offset is applied. This validates the LITO business rule which provides tax relief to low-income Australian taxpayers."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "GetTaxBracketsAsync_ValidYear_ReturnsBrackets",
+    "signature": "[Test] public async Task GetTaxBracketsAsync_ValidYear_ReturnsBrackets()",
+    "classification": "business_logic",
+    "what_it_does": "Tests retrieval of tax brackets for a specific financial year from the tax bracket repository",
+    "how_it_works": "Requests tax brackets for 2024-25 and verifies that 5 brackets are returned (the correct number for that year), with the first bracket starting at $0 income and the highest bracket having no upper limit (null MaxIncome). This validates that the tax bracket data structure correctly represents the Australian progressive tax system."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "Create2024_25TaxBrackets",
+    "signature": "private List<TaxBracket> Create2024_25TaxBrackets()",
+    "classification": "business_logic",
+    "what_it_does": "Creates the official Australian tax bracket structure for the 2024-25 financial year",
+    "how_it_works": "Returns a list of 5 tax brackets representing the 2024-25 Australian tax system: 0% on $0-$18,200 (tax-free threshold), 16% on $18,201-$45,000, 30% on $45,001-$135,000 (with $4,288 fixed amount), 37% on $135,001-$190,000 (with $31,288 fixed amount), and 45% on $190,001+ (with $51,638 fixed amount). These are the actual tax rates and thresholds mandated by Australian tax law for the 2024-25 financial year."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\TaxCalculationServiceTests.cs",
+    "method_name": "SetupMocksForTaxBrackets",
+    "signature": "private void SetupMocksForTaxBrackets(string year, List<TaxBracket> brackets)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "Setup",
+    "signature": "[SetUp] public void Setup()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CalculateAnnualTaxAsync_ValidInput_ReturnsCorrectSummary",
+    "signature": "[Test] public async Task CalculateAnnualTaxAsync_ValidInput_ReturnsCorrectSummary()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the annual tax calculation that aggregates 12 months of income data into a complete tax summary",
+    "how_it_works": "Processes complete monthly income data (12 months × $10,000 gross - $1,000 deductions = $9,000 taxable each month). Calculates total annual taxable income of $108,000 ($9,000 × 12). Verifies the calculation produces correct annual totals: gross income $120,000, deductions $12,000, taxable income $108,000, and applies appropriate tax calculations including income tax, medicare levy, and net tax payable. This validates the business logic for converting monthly payroll data into annual tax obligations."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CalculateAnnualTaxAsync_IncompleteMonthlyData_ThrowsInvalidOperationException",
+    "signature": "[Test] public async Task CalculateAnnualTaxAsync_IncompleteMonthlyData_ThrowsInvalidOperationException()",
+    "classification": "business_logic",
+    "what_it_does": "Tests business rule validation that requires complete 12-month income data for annual tax calculations",
+    "how_it_works": "Attempts annual tax calculation with only 8 months of data and verifies that an InvalidOperationException is thrown with message 'Incomplete monthly income data. Found 8 months, expected 12'. This enforces the business rule that annual tax calculations require complete financial year data (July to June in Australia) to be accurate and compliant with tax law requirements."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CalculateAnnualTaxAsync_ZeroIncome_HandlesCorrectly",
+    "signature": "[Test] public async Task CalculateAnnualTaxAsync_ZeroIncome_HandlesCorrectly()",
+    "classification": "business_logic",
+    "what_it_does": "Tests the edge case handling for taxpayers with zero income throughout the financial year",
+    "how_it_works": "Processes 12 months of zero income data and verifies that all tax calculations return zero: total gross income $0, total taxable income $0, income tax payable $0, net tax payable $0. This validates the business logic correctly handles unemployed or non-earning taxpayers who still need tax assessments but owe no tax due to falling below the tax-free threshold."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "GetMonthlyIncomeAsync_ValidInput_ReturnsRepositoryResult",
+    "signature": "[Test] public async Task GetMonthlyIncomeAsync_ValidInput_ReturnsRepositoryResult()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "SaveMonthlyIncomeAsync_ValidInput_CallsRepository",
+    "signature": "[Test] public async Task SaveMonthlyIncomeAsync_ValidInput_CallsRepository()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "GetAnnualSummaryAsync_ValidInput_ReturnsRepositoryResult",
+    "signature": "[Test] public async Task GetAnnualSummaryAsync_ValidInput_ReturnsRepositoryResult()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "GetTaxHistoryAsync_WithDefaultYears_ReturnsRepositoryResult",
+    "signature": "[Test] public async Task GetTaxHistoryAsync_WithDefaultYears_ReturnsRepositoryResult()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "GetTaxHistoryAsync_WithCustomYears_ReturnsRepositoryResult",
+    "signature": "[Test] public async Task GetTaxHistoryAsync_WithCustomYears_ReturnsRepositoryResult()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CalculateAnnualTaxAsync_LogsInformation",
+    "signature": "[Test] public async Task CalculateAnnualTaxAsync_LogsInformation()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CreateCompleteMonthlyIncomeData",
+    "signature": "private List<UserMonthlyIncome> CreateCompleteMonthlyIncomeData()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CreateMonthlyIncomeDataWithZeros",
+    "signature": "private List<UserMonthlyIncome> CreateMonthlyIncomeDataWithZeros()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CreateSampleTaxResult",
+    "signature": "private TaxCalculationResult CreateSampleTaxResult()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Tests.Unit\\Services\\UserTaxServiceTests.cs",
+    "method_name": "CreateSampleAnnualSummary",
+    "signature": "private UserAnnualTaxSummary CreateSampleAnnualSummary()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "CalculateTax",
+    "signature": "public TaxCalculationResult CalculateTax(TaxCalculationRequest request)",
+    "classification": "business_logic",
+    "what_it_does": "Core tax calculation engine that processes a tax calculation request and returns comprehensive tax results",
+    "how_it_works": "Validates input (non-negative income), retrieves appropriate tax brackets for the financial year (defaulting to 2024-25), calculates progressive income tax using bracket calculations, applies medicare levy (2% if enabled), calculates budget repair levy for 2015-18 years on income >$180k, applies LITO tax offset if enabled, computes net tax payable (ensuring non-negative), calculates effective and marginal tax rates. Returns complete TaxCalculationResult with all components including breakdown description."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "CalculateProgressiveIncomeTax",
+    "signature": "private decimal CalculateProgressiveIncomeTax(decimal income, List<TaxBracket> brackets)",
+    "classification": "business_logic",
+    "what_it_does": "Implements the Australian progressive income tax calculation using tax brackets",
+    "how_it_works": "Iterates through tax brackets in order by BracketOrder. For each bracket, determines if income falls within the bracket range (MinIncome to MaxIncome or decimal.MaxValue for highest bracket). Calculates taxable amount in bracket as minimum of income vs bracket maximum, minus bracket minimum plus 1. Applies bracket formula: FixedAmount + (taxableInBracket × TaxRate). For progressive calculation, takes the applicable bracket tax amount and breaks when income is within bracket range."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "CalculateBudgetRepairLevy",
+    "signature": "private decimal CalculateBudgetRepairLevy(decimal income, string financialYear)",
+    "classification": "business_logic",
+    "what_it_does": "Calculates the temporary Budget Repair Levy that applied to high income earners from 2015-16 to 2017-18",
+    "how_it_works": "Checks if the financial year is one of 2015-16, 2016-17, or 2017-18. If yes and income exceeds $180,000, applies a 2% levy on the total income (income × 0.02). Returns 0 for all other years or income below threshold. This implements the temporary levy introduced by the Australian government to help repair the budget deficit."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "CalculateLITO",
+    "signature": "private decimal CalculateLITO(decimal income)",
+    "classification": "business_logic",
+    "what_it_does": "Calculates the Low Income Tax Offset (LITO) which provides tax relief for low and middle income earners",
+    "how_it_works": "Implements a simplified LITO calculation: full $700 offset for income ≤ $37,500, tapered reduction of $700 - ((income - $37,500) × 5%) for income between $37,500-$45,000, and $0 for income > $45,000. This offset reduces the actual tax payable and helps ensure lower income earners pay less tax."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "GetMarginalTaxRate",
+    "signature": "private decimal GetMarginalTaxRate(decimal income, List<TaxBracket> brackets)",
+    "classification": "business_logic",
+    "what_it_does": "Determines the marginal tax rate (tax rate on the next dollar earned) for a given income level",
+    "how_it_works": "Searches through tax brackets to find the bracket where income falls within the range (income ≥ MinIncome and income ≤ MaxIncome or MaxIncome is null for highest bracket). Returns the TaxRate of the applicable bracket ordered by BracketOrder. The marginal rate represents the tax percentage applied to additional income earned at that income level."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.TestClient\\TaxCalculationEngine.cs",
+    "method_name": "InitializeTaxBrackets",
+    "signature": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()",
+    "classification": "business_logic",
+    "what_it_does": "Initializes the hard-coded tax bracket data for multiple Australian financial years",
+    "how_it_works": "Creates a dictionary mapping financial years to their respective tax bracket structures. Includes 2024-25 (current): 0%, 16%, 30%, 37%, 45% brackets; 2023-24: 0%, 19%, 32.5%, 37%, 45%; and 2015-16: 0%, 19%, 32.5%, 37%, 45% with different thresholds. Each bracket specifies MinIncome, MaxIncome (null for highest), TaxRate, FixedAmount (cumulative tax from lower brackets), and BracketOrder. This data represents the official Australian Tax Office tax scales for each year."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "Start",
+    "signature": "public void Start()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "Stop",
+    "signature": "public void Stop()",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "ProcessRequest",
+    "signature": "private void ProcessRequest(HttpListenerContext context)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "HandleTaxCalculation",
+    "signature": "private string HandleTaxCalculation(HttpListenerRequest request)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "HandleGetTaxBrackets",
+    "signature": "private string HandleGetTaxBrackets(string year)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "CalculateTax",
+    "signature": "private TaxCalculationResult CalculateTax(decimal income, string year)",
+    "classification": "business_logic",
+    "what_it_does": "Standalone API version of the tax calculation engine for processing HTTP requests",
+    "how_it_works": "Gets tax brackets for the specified year (defaults to 2024-25). Iterates through brackets to calculate progressive income tax: for each bracket, if income exceeds MinIncome, calculates tax for the bracket portion. If income exceeds bracket MaxIncome, applies full bracket tax and continues; otherwise calculates partial bracket tax and stops. Adds medicare levy (2% of income), budget repair levy (2% for 2015-18 years on income >$180k), and LITO offset. Computes gross tax, applies offsets, and returns TaxCalculationResult with all components including effective and marginal rates."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "GetMarginalRate",
+    "signature": "private decimal GetMarginalRate(decimal income, List<TaxBracket> brackets)",
+    "classification": "business_logic",
+    "what_it_does": "Determines the marginal tax rate for a given income level in the standalone API context",
+    "how_it_works": "Iterates through tax brackets to find the bracket where the income falls within the range (income ≥ MinIncome and either MaxIncome is null or income ≤ MaxIncome). Returns the TaxRate of the first matching bracket. This provides the tax rate that would apply to the next dollar of income earned at the specified income level."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "SerializeTaxResult",
+    "signature": "private string SerializeTaxResult(TaxCalculationResult result)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "ExtractJsonValue",
+    "signature": "private string ExtractJsonValue(string json, string key)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\TaxApiServer.cs",
+    "method_name": "InitializeTaxBrackets",
+    "signature": "private Dictionary<string, List<TaxBracket>> InitializeTaxBrackets()",
+    "classification": "business_logic",
+    "what_it_does": "Initializes the hard-coded tax bracket data for the standalone API server",
+    "how_it_works": "Creates a dictionary mapping financial years to their tax bracket structures for the API server. Includes the same bracket data as the main engine: 2024-25 (0%, 16%, 30%, 37%, 45%), 2023-24 (0%, 19%, 32.5%, 37%, 45%), and 2015-16 brackets with their respective income thresholds, fixed amounts, and bracket orders. This ensures the API server has access to the official Australian tax bracket data for calculations."
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.StandaloneApi\\Program.cs",
+    "method_name": "Main",
+    "signature": "static void Main(string[] args)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs",
+    "method_name": "LogError",
+    "signature": "public void LogError(string message, Exception exception = null)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs",
+    "method_name": "LogDebug",
+    "signature": "public void LogDebug(string message)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs",
+    "method_name": "LogInformation",
+    "signature": "public void LogInformation(string message)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\SimpleLogger.cs",
+    "method_name": "LogWarning",
+    "signature": "public void LogWarning(string message)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs",
+    "method_name": "GetAsync",
+    "signature": "public Task<T> GetAsync<T>(string key) where T : class",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs",
+    "method_name": "SetAsync",
+    "signature": "public Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Services\\CacheService.cs",
+    "method_name": "RemoveAsync",
+    "signature": "public Task RemoveAsync(string key)",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs",
+    "method_name": "CalculateAnnualTaxAsync",
+    "signature": "Task<UserAnnualTaxSummary> CalculateAnnualTaxAsync(Guid userId, string financialYear);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs",
+    "method_name": "GetMonthlyIncomeAsync",
+    "signature": "Task<List<UserMonthlyIncome>> GetMonthlyIncomeAsync(Guid userId, string financialYear);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs",
+    "method_name": "SaveMonthlyIncomeAsync",
+    "signature": "Task SaveMonthlyIncomeAsync(UserMonthlyIncome income);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs",
+    "method_name": "GetAnnualSummaryAsync",
+    "signature": "Task<UserAnnualTaxSummary> GetAnnualSummaryAsync(Guid userId, string financialYear);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\IUserTaxService.cs",
+    "method_name": "GetTaxHistoryAsync",
+    "signature": "Task<List<UserAnnualTaxSummary>> GetTaxHistoryAsync(Guid userId, int years = 5);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs",
+    "method_name": "CalculateTaxAsync",
+    "signature": "Task<TaxCalculationResult> CalculateTaxAsync(TaxCalculationRequest request);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs",
+    "method_name": "GetTaxBracketsAsync",
+    "signature": "Task<List<TaxBracket>> GetTaxBracketsAsync(string financialYear);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs",
+    "method_name": "CompareTaxAcrossYearsAsync",
+    "signature": "Task<TaxCalculationResult> CompareTaxAcrossYearsAsync(decimal income, List<string> years);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ITaxCalculationService.cs",
+    "method_name": "GetTaxHistoryAsync",
+    "signature": "Task<List<TaxCalculationResult>> GetTaxHistoryAsync(decimal income, int years = 10);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs",
+    "method_name": "LogInformation",
+    "signature": "void LogInformation(string message);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs",
+    "method_name": "LogWarning",
+    "signature": "void LogWarning(string message);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs",
+    "method_name": "LogError",
+    "signature": "void LogError(string message, Exception exception = null);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ILogger.cs",
+    "method_name": "LogDebug",
+    "signature": "void LogDebug(string message);",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs",
+    "method_name": "GetAsync",
+    "signature": "Task<T> GetAsync<T>(string key) where T : class;",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs",
+    "method_name": "SetAsync",
+    "signature": "Task SetAsync<T>(string key, T value, TimeSpan expiration) where T : class;",
+    "classification": "noise"
+  },
+  {
+    "file_path": "c:\\Users\\Isuru\\code\\tax-calc-app\\TaxCalculator.Services\\Interfaces\\ICacheService.cs",
+    "method_name": "RemoveAsync",
+    "signature": "Task RemoveAsync(string key);",
+    "classification": "noise"
+  }
+]

@@ -61,6 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\TaxCalculationServiceTests.cs" />
+    <Compile Include="Services\UserTaxServiceTests.cs" />
+    <Compile Include="Services\CacheServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
